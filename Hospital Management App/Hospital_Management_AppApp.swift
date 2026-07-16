@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+internal import CoreData
 
 @main
 struct Hospital_Management_AppApp: App {
@@ -14,7 +14,7 @@ struct Hospital_Management_AppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
