@@ -16,6 +16,12 @@ struct DoctorsListView: View {
     @State private var selectedCategory: String = "All"
     
     @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)],
+        animation: .default)
+    
+    var users: FetchedResults<User>
+    
+    @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Doctor.name, ascending: true)],
         animation: .default)
     
@@ -61,10 +67,15 @@ struct DoctorsListView: View {
                         if !filteredDoctors.isEmpty {
                             VStack(spacing:12){
                                 ForEach(filteredDoctors, id: \.objectID) { doctor in
-                                    NavigationLink(destination: DoctorDetailScreen(doctor: doctor)){
+                                    if let currentUser = users.first {
+                                        NavigationLink(destination: DoctorDetailScreen(doctor: doctor, user: currentUser)){
+                                            DoctorRowCard(doctor: doctor)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    } else {
+                                        // Fallback UI when no user is available
                                         DoctorRowCard(doctor: doctor)
                                     }
-                                    .buttonStyle(PlainButtonStyle())
                                 }
                             }
                             .padding(.horizontal, 20)

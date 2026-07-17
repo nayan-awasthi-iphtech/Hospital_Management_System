@@ -15,11 +15,12 @@ struct Appointment_Booking: View {
     
     @ObservedObject var doctor: Doctor
     
+    let currentUser: User
+    
     @State private var selectedDate = Date()
     @State private var selectedTimeSlot: String = ""
     @State private var isBookingSuccess: Bool = false
-    
-    // Dynamic slots configuration
+
     let timeSlots = ["09:00 AM", "10:00 AM", "11:30 AM", "02:00 PM", "03:30 PM", "05:00 PM"]
     
     var body: some View {
@@ -28,87 +29,20 @@ struct Appointment_Booking: View {
                 .ignoresSafeArea()
             
             if isBookingSuccess {
-       
-                VStack(spacing: 20) {
-                    Spacer()
-                    
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(.green)
-                        .scaleEffect(isBookingSuccess ? 1.0 : 0.5)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isBookingSuccess)
-                    
-                    Text("Booking Confirmed!")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    
-                    Text("Your appointment with \(doctor.name ?? "the specialist") has been successfully scheduled.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                    
-                    // Display details to verify runtime binding
-                    VStack(spacing: 8) {
-                        Text("📅 \(selectedDate.formatted(date: .abbreviated, time: .omitted))")
-                        Text("⏰ \(selectedTimeSlot)")
-                    }
-                    .font(.headline)
-                    .foregroundColor(.blue)
-                    .padding()
-                    .background(Color.blue.opacity(0.05))
-                    .cornerRadius(12)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        dismiss() 
-                    }) {
-                        Text("Go Back to Profile")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.blue)
-                            .cornerRadius(16)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 16)
-                }
-                .transition(.opacity.combined(with: .scale))
+                BookingSuccessView(
+                    doctor: doctor,
+                    selectedDate: selectedDate,
+                    selectedTimeSlot: selectedTimeSlot,
+                    isAnimated: isBookingSuccess,
+                    onDismiss: { dismiss() }
+                )
             } else {
                 
                 VStack(spacing: 0) {
                     ScrollView {
                         VStack(spacing: 24) {
                             
-                            HStack(spacing: 16) {
-                                if let data = doctor.imageData, let uiImage = UIImage(data: data) {
-                                    Image(uiImage: uiImage)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 60, height: 60)
-                                        .clipShape(Circle())
-                                } else {
-                                    Image(systemName: "person.crop.circle.fill")
-                                        .resizable()
-                                        .frame(width: 60, height: 60)
-                                        .foregroundColor(.gray)
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(doctor.name ?? "Doctor Profile")
-                                        .font(.headline)
-                                    Text(doctor.department ?? "Specialist")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
-                                Spacer()
-                            }
-                            .padding()
-                            .background(Color(.systemBackground))
-                            .cornerRadius(16)
+                            DoctorBookingHeaderView(doctor: doctor)
                              
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Select Date")
@@ -168,16 +102,35 @@ struct Appointment_Booking: View {
     }
     
     private func executeBookingTransaction() {
-     
+        let appointmentID = UUID()
         let appointment = Appointment(context: viewContext)
         appointment.id = UUID()
         appointment.date = selectedDate
-        appointment.status = "Scheduled"
+        appointment.status = "Scheduled | \(selectedTimeSlot)"
         
         appointment.appointment_doctor = doctor
+        appointment.appointment_user = currentUser
         
         do {
             try viewContext.save()
+
+            
+            if let bookedUser = appointment.appointment_user {
+                    print("✅ Appointment successfully saved!")
+                    print("👉 Doctor Name: \(appointment.appointment_doctor?.name ?? "Unknown Doctor")")
+                    print("👉 Patient/User Name: \(bookedUser.name ?? "Unknown User")")
+                    print("👉 User ID: \(bookedUser.id?.uuidString ?? "No ID")")
+                }
+            
+            if let exactAppointmentDate = combine(date: selectedDate, timeSlotString: selectedTimeSlot){
+                NotificationManager.shared.ScheduleNotification(
+                    id: appointmentID.uuidString,
+                    title: "Upcoming Appointment 📅",
+                    body: "Reminder: You have an appointment booked with \(doctor.name ?? "your doctor") soon.",
+                    targetDate: exactAppointmentDate,
+                    minutesBefore: 60
+                )
+            }
             
             withAnimation(.easeInOut(duration: 0.4)) {
                 isBookingSuccess = true
@@ -186,22 +139,38 @@ struct Appointment_Booking: View {
             print("Fatal Database Write Failure: \(error.localizedDescription)")
         }
     }
+    
+    private func combine(date: Date, timeSlotString: String) -> Date? {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "hh:mm a" 
+            
+            guard let timeDate = formatter.date(from: timeSlotString) else { return nil }
+            
+            let calendar = Calendar.current
+            var dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: timeDate)
+            
+            dateComponents.hour = timeComponents.hour
+            dateComponents.minute = timeComponents.minute
+            
+            return calendar.date(from: dateComponents)
+        }
 }
 
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    
-    let dummyDoctor = Doctor(context: context)
-    dummyDoctor.name = "Dr. Alice Green"
-    dummyDoctor.department = "Cardiology"
-    
-    if let uiImage = UIImage(named: "doctor1") {
-        dummyDoctor.imageData = uiImage.jpegData(compressionQuality: 0.8)
-    }
-    
-     return NavigationStack {
-        Appointment_Booking(doctor: dummyDoctor)
-            .environment(\.managedObjectContext, context)
-    }
-}
+//#Preview {
+//    let context = PersistenceController.preview.container.viewContext
+//    
+//    let dummyDoctor = Doctor(context: context)
+//    dummyDoctor.name = "Dr. Alice Green"
+//    dummyDoctor.department = "Cardiology"
+//    
+//    if let uiImage = UIImage(named: "doctor1") {
+//        dummyDoctor.imageData = uiImage.jpegData(compressionQuality: 0.8)
+//    }
+//    
+//    NavigationStack {
+//        Appointment_Booking(doctor: dummyDoctor)
+//            .environment(\.managedObjectContext, context)
+//    }
+//}
 

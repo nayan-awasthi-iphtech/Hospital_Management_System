@@ -21,7 +21,7 @@ struct RootTabView: View {
                 }
                 .tag(0)
             
-            AppointmentBookinHistory()
+            AppointmentBookingHistory()
                 .tabItem{
                     Label("Appointments", systemImage: "calendar.badge.clock")
                 }

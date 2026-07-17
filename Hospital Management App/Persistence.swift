@@ -37,13 +37,11 @@ struct PersistenceController {
         })
         container.viewContext.automaticallyMergesChangesFromParent = true
         
-        // Run seed check for production device storage on startup
         if !inMemory {
             checkAndSeedDatabase()
         }
     }
     
-    // Check if empty, then invoke the individual seed methods
     private func checkAndSeedDatabase() {
         let context = container.viewContext
         let request: NSFetchRequest<User> = User.fetchRequest()
