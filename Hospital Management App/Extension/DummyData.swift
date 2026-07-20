@@ -12,7 +12,20 @@ extension User {
     static func UserDummyData(viewContext: NSManagedObjectContext){
         let names = ["John Doe", "Jane Smith", "Robert Chen", "Emily Rodriguez", "William Taylor"]
         let bloodGroups = ["O+", "A-", "B+", "AB+", "O-"]
-        let diseases = ["Penicillin", "None", "Peanuts", "Sulfa Drugs", "None"]
+        let allergies = ["Penicillin", "None", "Peanuts", "Sulfa Drugs", "None"]
+        
+        let addresses = [
+            "123 Innovation Way, New York, NY",
+            "456 Oak Avenue, Los Angeles, CA",
+            "789 Pine Road, San Francisco, CA",
+            "321 Maple Drive, Austin, TX",
+            "654 Cedar Lane, Chicago, IL"
+        ]
+        let emails = ["john.doe@email.com", "jane.smith@email.com", "r.chen@email.com", "emily.r@email.com", "w.taylor@email.com"]
+        let genders = ["Male", "Female", "Male", "Female", "Male"]
+        let heights = ["180 cm", "165 cm", "175 cm", "160 cm", "182 cm"]
+        let phones = ["+1 (555) 019-2831", "+1 (555) 014-9928", "+1 (555) 012-4819", "+1 (555) 016-3391", "+1 (555) 019-7722"]
+        
         let insuranceDetailsPool = [
             "BlueShield Platinum PPO - Policy #BS-994821-X",
             "UnitedHealth Care Choice Plus - Policy #UH-883719-A",
@@ -29,14 +42,30 @@ extension User {
             5550190
         ]
         
+        let calendar = Calendar.current
+//        let currentYear = calendar.component(.year, from: Date())
+        let birthYears = [1985, 1992, 1978, 2000, 1989]
+        
         for i in 0..<5 {
             let user = User(context: viewContext)
-            user.name = names[i]
             user.id = UUID()
+            user.name = names[i]
             user.bloodGroup = bloodGroups[i]
-            user.diseases = diseases[i]
+            user.allergies = allergies[i]
             user.emergencyContact = emergencyContactsPool[i]
             user.insuranceDetails = insuranceDetailsPool[i]
+            
+            user.address = addresses[i]
+            user.email = emails[i]
+            user.gender = genders[i]
+            user.height = heights[i]
+            user.phone = phones[i]
+            
+            var dateComponents = DateComponents()
+            dateComponents.year = birthYears[i]
+            dateComponents.month = (i * 2) + 1
+            dateComponents.day = (i * 5) + 1
+            user.dob = calendar.date(from: dateComponents) ?? Date()
         }
         
         try? viewContext.save()
@@ -67,6 +96,9 @@ extension Doctor {
 
 
 extension Appointment {
+    
+    static let availableTimeSlots = ["09:00 AM", "11:30 AM", "02:00 PM", "03:30 PM", "05:00 PM"]
+    
     static func ApppointmentDummyData(viewContext:NSManagedObjectContext){
         
         let users: [User] = (try? viewContext.fetch(User.fetchRequest())) ?? []
@@ -80,6 +112,7 @@ extension Appointment {
         for i in 0..<5 {
             let appointment = Appointment(context: viewContext)
             appointment.status = statuses[i]
+            appointment.timeSlot = Appointment.availableTimeSlots[i % Appointment.availableTimeSlots.count]
             appointment.id = UUID()
             appointment.appointment_user = users[i % users.count]
             appointment.appointment_doctor = doctors[i % doctors.count]
@@ -100,13 +133,21 @@ extension Prescription {
         guard !appointments.isEmpty else { return }
         
         let medicines = ["Amoxicillin", "Lisinopril", "Ibuprofen", "Metformin", "Atorvastatin"]
-        let dosages = ["500mg - 3x daily", "10mg - Once daily", "400mg - As needed", "500mg - Twice daily", "20mg - At bedtime"]
+        let dosages = ["500mg", "10mg", "400mg", "500mg", "20mg"]
+        let frequencies = ["3x daily", "Once daily", "As needed", "Twice daily", "At bedtime"]
+        let states = [true, false, true, false, true]
+        
+        let calendar = Calendar.current
         
         for i in 0..<5 {
             let prescription = Prescription(context: viewContext)
             prescription.id = UUID()
             prescription.medicineName = medicines[i]
             prescription.dosage = dosages[i]
+            
+            prescription.frequency = frequencies[i]
+            prescription.isTaken = states[i]
+            prescription.startDate = calendar.date(byAdding: .day,value: -i, to: Date()) ?? Date()
             prescription.prescription_appointment = appointments[i % appointments.count]
             prescription.prescription_user = users[i % users.count]
             prescription.prescription_doctor = doctors[i % doctors.count]

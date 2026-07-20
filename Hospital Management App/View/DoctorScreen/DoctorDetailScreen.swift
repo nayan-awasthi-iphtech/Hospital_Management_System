@@ -15,6 +15,7 @@ struct DoctorDetailScreen: View {
     
     @ObservedObject var doctor: Doctor
     @ObservedObject var user: User
+    @Binding var selectedTab:Int
     
     var body: some View {
         VStack(spacing:24){
@@ -111,15 +112,15 @@ struct DoctorDetailScreen: View {
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2)
         .navigationDestination(isPresented:$isPresented){
-            Appointment_Booking(doctor: doctor, currentUser: user)
+            Appointment_Booking(doctor: doctor, selectedTab:$selectedTab, currentUser: user)
         }
         
         Spacer()
     }
 }
-
-#Preview {
-    let mockData = try? PersistenceController.preview.container.viewContext.fetch(Doctor.fetchRequest()).first
-    let mockUser = try? PersistenceController.preview.container.viewContext.fetch(User.fetchRequest()).first
-    DoctorDetailScreen(doctor: mockData!, user: mockUser!)
-}
+//
+//#Preview {
+//    let mockData = try? PersistenceController.preview.container.viewContext.fetch(Doctor.fetchRequest()).first
+//    let mockUser = try? PersistenceController.preview.container.viewContext.fetch(User.fetchRequest()).first
+//    DoctorDetailScreen(doctor: mockData!, user: mockUser!)
+//}

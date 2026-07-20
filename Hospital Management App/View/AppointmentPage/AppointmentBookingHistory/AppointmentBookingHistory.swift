@@ -4,21 +4,28 @@
 //
 //  Created by iPHTech 30 on 17/07/26.
 //
-
 import SwiftUI
 internal import CoreData
 
 struct AppointmentBookingHistory: View {
     @Environment(\.managedObjectContext) var viewContext
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: false)])
-    var appointments: FetchedResults<Appointment>
+    
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)],
+        animation: .default
+    ) private var users: FetchedResults<User>
+    
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: false)],
+        animation: .default
+    )  private var appointments:FetchedResults<Appointment>
     
     @State private var selectedTab = 0
-    
     @State private var appointemntToReschedule: Appointment? = nil
-    @State private var isShowingRescheduleSheet: Bool = false
     
     var body: some View {
+        let currentUser = users.first
+        
         NavigationStack {
             VStack {
                 Picker("", selection: $selectedTab) {
@@ -28,28 +35,36 @@ struct AppointmentBookingHistory: View {
                 .pickerStyle(.segmented)
                 .padding()
                 
-                List {
-                    ForEach(filteredAppointments) { app in
-                        AppointmentCardView(
-                            appointment: app,
-                            onCancel: { cancelAppointment(app) },
-                            onReschedule: {
-                                print(app)
-                                appointemntToReschedule = app
-                                isShowingRescheduleSheet = true
-                            }
-                        )
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                if filteredAppointments(for: currentUser).isEmpty {
+                    ContentUnavailableView(
+                        "No Appointments",
+                        systemImage: "calendar.badge.clock",
+                        description: Text(selectedTab == 0 ? "You don't have any upcoming appointments scheduled." : "Your appointment history is empty.")
+                    )
+                    .background(Color(.systemGroupedBackground))
+                } else {
+                    List {
+                        ForEach(filteredAppointments(for: currentUser)) { app in
+                            AppointmentCardView(
+                                appointment: app,
+                                onCancel: { cancelAppointment(app) },
+                                onReschedule: {
+                                    appointemntToReschedule = app
+                                }
+                            )
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        }
+                        .onDelete(perform: { offsets in
+                            deleteAppointmentItems(at: offsets, for: currentUser)
+                        })
                     }
-                    .onDelete(perform: deleteAppointmentItems)
+                    .listStyle(.plain)
+                    .background(Color(.systemGroupedBackground))
                 }
-                .listStyle(.plain)
-                .background(Color(.systemGroupedBackground))
             }
             .navigationTitle("Appointments")
-            
             .sheet(item: $appointemntToReschedule) { targetAppointment in
                 RescheduleSheetView(
                     appointment: targetAppointment,
@@ -61,17 +76,18 @@ struct AppointmentBookingHistory: View {
         }
     }
     
-    private var filteredAppointments: [Appointment] {
+    private func filteredAppointments(for user: User?) -> [Appointment] {
+        guard let currentUser = user else { return [] }
+        
+        let userAppointments = appointments.filter { $0.appointment_user == currentUser}
         
         if selectedTab == 0 {
-            
-            return appointments.filter { app in
+            return userAppointments.filter { app in
                 let status = app.status ?? ""
                 return status.localizedCaseInsensitiveContains("Scheduled") || status.isEmpty
             }
         } else {
-            // History Tab: Cancelled ya Completed items
-            return appointments.filter { app in
+            return userAppointments.filter { app in
                 let status = app.status ?? ""
                 return status.localizedCaseInsensitiveContains("Cancelled") ||
                 status.localizedCaseInsensitiveContains("Completed") ||
@@ -81,14 +97,23 @@ struct AppointmentBookingHistory: View {
     }
     
     private func cancelAppointment(_ app: Appointment) {
-        let current = parseAppointmentStatus(app.status)
-        app.status = "Cancelled | \(current.slot)"
-        try? viewContext.save()
+        withAnimation{
+            app.status = "Cancelled"
+            
+            do {
+                try viewContext.save()
+                print("✅ Core Data targeted pipeline flushed successfully!")
+            } catch {
+                print("❌ Context update tracking error: \(error.localizedDescription)")
+            }
+        }
     }
     
-    private func deleteAppointmentItems(at offsets: IndexSet) {
+    private func deleteAppointmentItems(at offsets: IndexSet, for user: User?) {
+        let itemsToDelete = offsets.map { filteredAppointments(for: user)[$0] }
+        
         withAnimation {
-            offsets.map { filteredAppointments[$0] }.forEach(viewContext.delete)
+            itemsToDelete.forEach(viewContext.delete)
             
             do {
                 try viewContext.save()
@@ -102,7 +127,6 @@ struct AppointmentBookingHistory: View {
 
 #Preview {
     let context = PersistenceController.preview.container.viewContext
-    
     AppointmentBookingHistory()
         .environment(\.managedObjectContext, context)
 }

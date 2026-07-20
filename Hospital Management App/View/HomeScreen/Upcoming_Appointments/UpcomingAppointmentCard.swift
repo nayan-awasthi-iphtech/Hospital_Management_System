@@ -7,8 +7,9 @@
 import SwiftUI
 
 struct UpcomingAppointmentCard: View {
-
+    
     let appointment: Appointment?
+    @Binding var selectedTab:Int
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -21,20 +22,23 @@ struct UpcomingAppointmentCard: View {
                 
                 Spacer()
                 
-                Button("See all") {
-                    // Action to handle navigation later
+                NavigationLink(destination: AppointmentBookingHistory()){
+                    Text("See All")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.blue)
+                        .onTapGesture {
+                            selectedTab = 1
+                        }
                 }
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.blue)
             }
             .padding(.horizontal, 15)
-      
+            
             if let appt = appointment {
                 VStack(spacing: 16) {
-                    // Doctor Details Row
+                    
                     HStack(alignment: .center, spacing: 12) {
-                        // Custom avatar badge
+                        
                         Image(systemName: "person.crop.circle.badge.checkmark.fill")
                             .resizable()
                             .scaledToFit()
@@ -55,7 +59,6 @@ struct UpcomingAppointmentCard: View {
                         
                         Spacer()
                         
-                        // Dynamic Status Badge
                         Text(appt.status ?? "Scheduled")
                             .font(.caption)
                             .fontWeight(.semibold)
@@ -70,13 +73,13 @@ struct UpcomingAppointmentCard: View {
                     
                     Divider()
                     
-                    // Date & Time Row
+                    
                     HStack(spacing: 20) {
                         HStack(spacing: 6) {
                             Image(systemName: "calendar")
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
-                            Text("Jul 18, 2026") // Dynamic date parsing can be formatted here later
+                            Text("Jul 18, 2026")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -101,7 +104,7 @@ struct UpcomingAppointmentCard: View {
                 )
                 .padding(.horizontal, 15)
             } else {
-                // Elegant Empty State
+                
                 HStack {
                     Image(systemName: "calendar.badge.exclamationmark")
                         .foregroundColor(.secondary)
@@ -121,7 +124,7 @@ struct UpcomingAppointmentCard: View {
         }
     }
     
-
+    
     private func statusColor(for status: String?) -> Color {
         switch status?.lowercased() {
         case "completed": return .green

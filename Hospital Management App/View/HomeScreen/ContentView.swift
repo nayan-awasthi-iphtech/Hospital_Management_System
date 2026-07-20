@@ -11,6 +11,7 @@ internal import CoreData
 struct HomeScreen: View {
     
     @Environment(\.managedObjectContext) var viewContext
+    @Binding var selectedTab:Int
     
     // CHANGED: Using NSSortDescriptor to prevent the NSObject conversion crash
     @FetchRequest(
@@ -84,7 +85,7 @@ struct HomeScreen: View {
                             reportCount: 4
                         )
                         
-                        UpcomingAppointmentCard(appointment: userAppointments.first)
+                        UpcomingAppointmentCard(appointment: userAppointments.first, selectedTab:$selectedTab)
                         
                         PendingMedicinesSection(prescriptions: userPrescription)
                     }
@@ -95,8 +96,8 @@ struct HomeScreen: View {
     }
 }
 
-#Preview {
-    HomeScreen()
-        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-}
+//#Preview {
+//    HomeScreen()
+//        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+//}
 

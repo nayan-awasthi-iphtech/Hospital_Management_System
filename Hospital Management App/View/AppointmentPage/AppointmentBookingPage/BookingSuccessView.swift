@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct BookingSuccessView: View {
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var doctor: Doctor
     let selectedDate: Date
     let selectedTimeSlot: String
     let isAnimated: Bool
-    var onDismiss: () -> Void
-    
+    var navTap:()->Void
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -47,8 +47,12 @@ struct BookingSuccessView: View {
             
             Spacer()
             
-            Button(action: onDismiss) {
-                Text("Go Back to Profile")
+           
+            Button(action: {
+                navTap()
+                dismiss()
+            }) {
+                Text("Go Back to Bookings Page")
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

@@ -18,8 +18,6 @@ struct RescheduleSheetView: View {
     @State private var newDate: Date = Date()
     @State private var newTimePicker:String = ""
     
-    let timeSlots = ["09:00 AM", "10:00 AM", "11:30 AM", "02:00 PM", "03:30 PM", "05:00 PM"]
-    
     var body: some View {
         NavigationStack{
             ScrollView{
@@ -40,7 +38,7 @@ struct RescheduleSheetView: View {
                             .font(.headline)
                         
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12){
-                            ForEach(timeSlots, id: \.self){ slot in
+                            ForEach(Appointment.availableTimeSlots, id: \.self){ slot in
                                 Text(slot)
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
@@ -84,8 +82,7 @@ struct RescheduleSheetView: View {
                 if let currentDate = appointment.date{
                     newDate = currentDate
                 }
-                let parsed = parseAppointmentStatus(appointment.status)
-                newTimePicker = parsed.slot
+                newTimePicker = appointment.safeTimeSlot
             }
         }
     }
@@ -93,7 +90,8 @@ struct RescheduleSheetView: View {
     private func saveRescheduledData(){
         withAnimation{
             appointment.date = newDate
-            appointment.status = "Scheduled | \(newTimePicker)"
+            appointment.timeSlot = newTimePicker
+            appointment.status = "Scheduled"
             
             do{
                 try viewContext.save()

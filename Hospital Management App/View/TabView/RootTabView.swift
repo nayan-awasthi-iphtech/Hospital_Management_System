@@ -15,7 +15,7 @@ struct RootTabView: View {
     
     var body: some View {
         SwiftUI.TabView(selection: $selectedTab){
-            HomeScreen()
+            HomeScreen(selectedTab:$selectedTab)
                 .tabItem{
                     Label("Home", systemImage: "house.fill")
                 }
@@ -27,11 +27,18 @@ struct RootTabView: View {
                 }
                 .tag(1)
             
-            DoctorScreenView()
+            DoctorsListView(selectedTab: $selectedTab)
+                .environment(\.managedObjectContext, viewContext)
                 .tabItem{
                     Label("Doctors", systemImage: "person.badge.plus")
                 }
                 .tag(2)
+            
+            MedicalReportsDashboard()
+                .tabItem{
+                    Label("Reports", systemImage: "doc.badge.plus")
+                }
+                .tag(3)
         }
         .tint(.blue)
     }

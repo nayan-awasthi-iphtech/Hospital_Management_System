@@ -15,13 +15,13 @@ struct Appointment_Booking: View {
     
     @ObservedObject var doctor: Doctor
     
+    @Binding var selectedTab:Int
+    
     let currentUser: User
     
     @State private var selectedDate = Date()
     @State private var selectedTimeSlot: String = ""
     @State private var isBookingSuccess: Bool = false
-
-    let timeSlots = ["09:00 AM", "10:00 AM", "11:30 AM", "02:00 PM", "03:30 PM", "05:00 PM"]
     
     var body: some View {
         ZStack {
@@ -34,7 +34,9 @@ struct Appointment_Booking: View {
                     selectedDate: selectedDate,
                     selectedTimeSlot: selectedTimeSlot,
                     isAnimated: isBookingSuccess,
-                    onDismiss: { dismiss() }
+                    navTap: {
+                        selectedTab = 1
+                    }
                 )
             } else {
                 
@@ -60,7 +62,7 @@ struct Appointment_Booking: View {
                                     .font(.headline)
                                 
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                                    ForEach(timeSlots, id: \.self) { slot in
+                                    ForEach(Appointment.availableTimeSlots, id: \.self) { slot in
                                         Text(slot)
                                             .font(.subheadline)
                                             .fontWeight(.semibold)
@@ -106,8 +108,8 @@ struct Appointment_Booking: View {
         let appointment = Appointment(context: viewContext)
         appointment.id = UUID()
         appointment.date = selectedDate
-        appointment.status = "Scheduled | \(selectedTimeSlot)"
-        
+        appointment.status = "Scheduled"
+        appointment.timeSlot = selectedTimeSlot
         appointment.appointment_doctor = doctor
         appointment.appointment_user = currentUser
         

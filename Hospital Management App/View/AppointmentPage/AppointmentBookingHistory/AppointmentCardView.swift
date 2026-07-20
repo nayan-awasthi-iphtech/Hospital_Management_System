@@ -48,12 +48,12 @@ struct AppointmentCardView: View {
                 
                 Spacer()
                 
-                StatusBadge(statusText: parseAppointmentStatus(appointment.status).status)
+                StatusBadge(statusText: appointment.safeStatus)
             }
             
             HStack(spacing: 16) {
                 MetaIcon(icon: "calendar", text: appointment.date?.formatted(date: .abbreviated, time: .omitted) ?? "N/A")
-                MetaIcon(icon: "clock", text: parseAppointmentStatus(appointment.status).slot)
+                MetaIcon(icon: "clock", text: appointment.safeTimeSlot)
                 Spacer()
                 MetaIcon(icon: "doc.text", text: "Check-up")
             }
@@ -63,7 +63,7 @@ struct AppointmentCardView: View {
             .background(Color(.systemGray6))
             .cornerRadius(8)
             
-            if parseAppointmentStatus(appointment.status).status == "Scheduled" {
+            if appointment.status == "Scheduled" {
                 HStack(spacing: 12) {
                     Button("Cancel", action: onCancel).buttonStyle(ActionButtonStyle(color: .red))
                     

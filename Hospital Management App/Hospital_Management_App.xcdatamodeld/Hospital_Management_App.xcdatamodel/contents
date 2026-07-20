@@ -4,6 +4,7 @@
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="status" optional="YES" attributeType="String"/>
+        <attribute name="timeSlot" optional="YES" attributeType="String"/>
         <relationship name="appointment_doctor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Doctor" inverseName="doctor_appointment" inverseEntity="Doctor"/>
         <relationship name="appointment_prescription" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_appointment" inverseEntity="Prescription"/>
         <relationship name="appointment_user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="user_appointment" inverseEntity="User"/>
@@ -19,8 +20,9 @@
         <attribute name="imageData" optional="YES" attributeType="Binary"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="specialty" optional="YES" attributeType="String"/>
-        <relationship name="doctor_appointment" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_doctor" inverseEntity="Appointment"/>
-        <relationship name="doctor_prescription" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_doctor" inverseEntity="Prescription"/>
+        <relationship name="doctor_appointment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_doctor" inverseEntity="Appointment"/>
+        <relationship name="doctor_prescription" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_doctor" inverseEntity="Prescription"/>
+        <relationship name="doctor_report" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Report" inverseName="report_doctor" inverseEntity="Report"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -29,7 +31,9 @@
     </entity>
     <entity name="Prescription" representedClassName="Prescription" syncable="YES" codeGenerationType="class">
         <attribute name="dosage" optional="YES" attributeType="String"/>
+        <attribute name="frequency" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isTaken" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="medicineName" optional="YES" attributeType="String"/>
         <attribute name="startDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="prescription_appointment" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_prescription" inverseEntity="Appointment"/>
@@ -41,15 +45,37 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
+    <entity name="Report" representedClassName="Report" syncable="YES" codeGenerationType="class">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fileData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="reportType" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="uploadedBy" optional="YES" attributeType="String"/>
+        <relationship name="report_doctor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Doctor" inverseName="doctor_report" inverseEntity="Doctor"/>
+        <relationship name="report_user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="user_report" inverseEntity="User"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="id"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
     <entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="allergies" optional="YES" attributeType="String"/>
         <attribute name="bloodGroup" optional="YES" attributeType="String"/>
-        <attribute name="diseases" optional="YES" attributeType="String"/>
+        <attribute name="dob" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="email" optional="YES" attributeType="String"/>
         <attribute name="emergencyContact" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="gender" optional="YES" attributeType="String"/>
+        <attribute name="height" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="insuranceDetails" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <relationship name="user_appointment" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_user" inverseEntity="Appointment"/>
-        <relationship name="user_prescription" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_user" inverseEntity="Prescription"/>
+        <attribute name="phone" optional="YES" attributeType="String"/>
+        <relationship name="user_appointment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_user" inverseEntity="Appointment"/>
+        <relationship name="user_prescription" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_user" inverseEntity="Prescription"/>
+        <relationship name="user_report" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Report" inverseName="report_user" inverseEntity="Report"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>

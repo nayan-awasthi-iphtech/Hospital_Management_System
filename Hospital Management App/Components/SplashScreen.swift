@@ -20,7 +20,7 @@ struct SplashScreenView: View {
                 
                     Image(systemName: "cross.case.fill")
                         .font(.system(size: 80))
-                        .foregroundColor(Color(red: 0.0, green: 0.9, blue: 0.9)) // Neon Cyan
+                        .foregroundColor(Color(red: 0.0, green: 0.9, blue: 0.9))
                         .shadow(color: Color(red: 0.0, green: 0.9, blue: 0.9).opacity(0.6), radius: 15)
                         .scaleEffect(isAnimating ? 1.0 : 0.7)
                         .opacity(isAnimating ? 1.0 : 0.0)

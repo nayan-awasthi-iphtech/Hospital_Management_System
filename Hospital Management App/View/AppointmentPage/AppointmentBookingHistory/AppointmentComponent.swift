@@ -1,5 +1,5 @@
 //
-//  AppointmentBookinHistory.swift
+//  StatusBadge.swift
 //  Hospital Management App
 //
 //  Created by iPHTech 30 on 16/07/26.
@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct StatusBadge: View {
-    
     let statusText: String
     
     var body: some View {
         Text(statusText == "Scheduled" ? "Upcoming" : statusText)
-            .font(.system(size:11, weight: .semibold))
+            .font(.system(size: 11, weight: .semibold))
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(badgeColor().opacity(0.12))
@@ -27,7 +26,7 @@ struct StatusBadge: View {
             return .blue
         case "Completed":
             return .green
-        case "Cancelled":
+        case "Cancelled", "Canceled":
             return .red
         default:
             return .gray
@@ -35,21 +34,14 @@ struct StatusBadge: View {
     }
 }
 
-func parseAppointmentStatus(_ rawStatus: String?) -> (status: String, slot: String) {
-    let raw = rawStatus ?? "Scheduled"
-    let components = raw.components(separatedBy: " | ")
-    let status = components.first ?? "Scheduled"
-    
-    var slot = "10:00 AM"
-    
-    if components.count > 1 {
-        let extractedSlot = components[1].trimmingCharacters(in: .whitespacesAndNewlines)
-        if !extractedSlot.isEmpty {
-            slot = extractedSlot
-        }
+extension Appointment {
+    var safeStatus: String {
+        self.status ?? "Scheduled"
     }
     
-    return (status, slot)
+    var safeTimeSlot: String {
+        self.timeSlot ?? "10:00 AM"
+    }
 }
 
 #Preview {

@@ -15,6 +15,8 @@ struct DoctorsListView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: String = "All"
     
+    @Binding var selectedTab:Int
+    
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)],
         animation: .default)
@@ -68,7 +70,7 @@ struct DoctorsListView: View {
                             VStack(spacing:12){
                                 ForEach(filteredDoctors, id: \.objectID) { doctor in
                                     if let currentUser = users.first {
-                                        NavigationLink(destination: DoctorDetailScreen(doctor: doctor, user: currentUser)){
+                                        NavigationLink(destination: DoctorDetailScreen(doctor: doctor, user: currentUser,selectedTab: $selectedTab)){
                                             DoctorRowCard(doctor: doctor)
                                         }
                                         .buttonStyle(PlainButtonStyle())
@@ -106,8 +108,8 @@ struct DoctorsListView: View {
         }
     }
 }
-
-#Preview {
-    DoctorsListView()
-        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-}
+//
+//#Preview {
+//    DoctorsListView()
+//        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+//}
