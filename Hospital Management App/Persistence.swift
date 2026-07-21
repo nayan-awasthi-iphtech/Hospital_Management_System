@@ -17,7 +17,7 @@ struct PersistenceController {
         
         User.UserDummyData(viewContext: viewContext)
         Doctor.DoctorDummyData(viewContext: viewContext)
-        Appointment.ApppointmentDummyData(viewContext: viewContext)
+        Appointment.AppointmentDummyData(viewContext: viewContext)
         Prescription.PrescriptionDummyData(viewContext: viewContext)
         
         return result
@@ -52,7 +52,7 @@ struct PersistenceController {
                 print("Database empty. Seeding permanent entities sequentially...")
                 User.UserDummyData(viewContext: context)
                 Doctor.DoctorDummyData(viewContext: context)
-                Appointment.ApppointmentDummyData(viewContext: context)
+                Appointment.AppointmentDummyData(viewContext: context)
                 Prescription.PrescriptionDummyData(viewContext: context)
                 print("Permanent database seeding successful!")
             }

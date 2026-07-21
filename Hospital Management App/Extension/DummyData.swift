@@ -24,15 +24,18 @@ extension User {
         let emails = ["john.doe@email.com", "jane.smith@email.com", "r.chen@email.com", "emily.r@email.com", "w.taylor@email.com"]
         let genders = ["Male", "Female", "Male", "Female", "Male"]
         let heights = ["180 cm", "165 cm", "175 cm", "160 cm", "182 cm"]
+        let weights = ["65", "85", "75", "45", "65"]
         let phones = ["+1 (555) 019-2831", "+1 (555) 014-9928", "+1 (555) 012-4819", "+1 (555) 016-3391", "+1 (555) 019-7722"]
         
         let insuranceDetailsPool = [
-            "BlueShield Platinum PPO - Policy #BS-994821-X",
-            "UnitedHealth Care Choice Plus - Policy #UH-883719-A",
-            "Aetna Premium Health HMO - Policy #AE-441029-M",
-            "Cigna Open Access Plus - Policy #CG-772911-B",
-            "Humana Gold Value Plan - Policy #HU-110293-K"
+            "BlueShield Platinum PPO",
+            "UnitedHealth Care Choice Plus",
+            "Aetna Premium Health HMO",
+            "Cigna Open Access Plus",
+            "Humana Gold Value Plan"
         ]
+        
+        let PolicyIdDetails = ["#BS-994821-X", "#UH-883719-A", "#AE-441029-M", "#CG-772911-B", "#HU-110293-K"]
         
         let emergencyContactsPool: [Int32] = [
             5550143,
@@ -43,7 +46,6 @@ extension User {
         ]
         
         let calendar = Calendar.current
-//        let currentYear = calendar.component(.year, from: Date())
         let birthYears = [1985, 1992, 1978, 2000, 1989]
         
         for i in 0..<5 {
@@ -54,11 +56,13 @@ extension User {
             user.allergies = allergies[i]
             user.emergencyContact = emergencyContactsPool[i]
             user.insuranceDetails = insuranceDetailsPool[i]
+            user.policyId = PolicyIdDetails[i]
             
             user.address = addresses[i]
             user.email = emails[i]
             user.gender = genders[i]
             user.height = heights[i]
+            user.weight = weights[i]
             user.phone = phones[i]
             
             var dateComponents = DateComponents()
@@ -99,7 +103,7 @@ extension Appointment {
     
     static let availableTimeSlots = ["09:00 AM", "11:30 AM", "02:00 PM", "03:30 PM", "05:00 PM"]
     
-    static func ApppointmentDummyData(viewContext:NSManagedObjectContext){
+    static func AppointmentDummyData(viewContext:NSManagedObjectContext){
         
         let users: [User] = (try? viewContext.fetch(User.fetchRequest())) ?? []
         let doctors: [Doctor] = (try? viewContext.fetch(Doctor.fetchRequest())) ?? []
@@ -109,6 +113,8 @@ extension Appointment {
         
         let statuses = ["Scheduled", "Completed", "Scheduled", "Canceled", "Scheduled"]
         
+        let calendar = Calendar.current
+        
         for i in 0..<5 {
             let appointment = Appointment(context: viewContext)
             appointment.status = statuses[i]
@@ -116,7 +122,7 @@ extension Appointment {
             appointment.id = UUID()
             appointment.appointment_user = users[i % users.count]
             appointment.appointment_doctor = doctors[i % doctors.count]
-            
+            appointment.date = calendar.date(byAdding: .day, value: i, to: Date()) ?? Date()
         }
         
         try? viewContext.save()

@@ -9,43 +9,55 @@ import SwiftUI
 internal import CoreData
 
 struct RootTabView: View {
-    
+    @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedTab = 0
-    @Environment(\.managedObjectContext) var viewContext
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)]
+    ) private var users: FetchedResults<User>
     
+    private var currentUser: User? {
+        users.first
+    }
+
     var body: some View {
-        SwiftUI.TabView(selection: $selectedTab){
-            HomeScreen(selectedTab:$selectedTab)
-                .tabItem{
-                    Label("Home", systemImage: "house.fill")
+        Group {
+            if let user = currentUser {
+                SwiftUI.TabView(selection: $selectedTab) {
+                    HomeScreen(selectedTab: $selectedTab)
+                        .tabItem { Label("Home", systemImage: "house.fill") }
+                        .tag(0)
+                    
+                    AppointmentBookingHistory()
+                        .tabItem { Label("Appointments", systemImage: "calendar.badge.clock") }
+                        .tag(1)
+                    
+                    DoctorsListView(selectedTab: $selectedTab)
+                        .tabItem { Label("Doctors", systemImage: "person.badge.plus") }
+                        .tag(2)
+                    
+                    MedicalReportsDashboard()
+                        .tabItem { Label("Reports", systemImage: "doc.badge.plus") }
+                        .tag(3)
+                    
+                    UserProfileView()
+                        .tabItem { Label("User", systemImage: "person.fill") }
+                        .tag(4)
                 }
-                .tag(0)
-            
-            AppointmentBookingHistory()
-                .tabItem{
-                    Label("Appointments", systemImage: "calendar.badge.clock")
-                }
-                .tag(1)
-            
-            DoctorsListView(selectedTab: $selectedTab)
-                .environment(\.managedObjectContext, viewContext)
-                .tabItem{
-                    Label("Doctors", systemImage: "person.badge.plus")
-                }
-                .tag(2)
-            
-            MedicalReportsDashboard()
-                .tabItem{
-                    Label("Reports", systemImage: "doc.badge.plus")
-                }
-                .tag(3)
+                .tint(.blue)
+                .environmentObject(user)
+            } else {
+                ContentUnavailableView("No User Found", systemImage: "person.crop.circle.badge.exclamationmark")
+            }
         }
-        .tint(.blue)
     }
 }
 
 #Preview {
     let context = PersistenceController.preview.container.viewContext
-    RootTabView()
+    let request: NSFetchRequest<User> = User.fetchRequest()
+    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
+    
+    return RootTabView()
         .environment(\.managedObjectContext, context)
+        .environmentObject(sampleUser)
 }

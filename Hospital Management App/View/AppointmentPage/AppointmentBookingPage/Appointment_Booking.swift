@@ -106,7 +106,7 @@ struct Appointment_Booking: View {
     private func executeBookingTransaction() {
         let appointmentID = UUID()
         let appointment = Appointment(context: viewContext)
-        appointment.id = UUID()
+        appointment.id = appointmentID
         appointment.date = selectedDate
         appointment.status = "Scheduled"
         appointment.timeSlot = selectedTimeSlot
@@ -130,8 +130,9 @@ struct Appointment_Booking: View {
                     title: "Upcoming Appointment 📅",
                     body: "Reminder: You have an appointment booked with \(doctor.name ?? "your doctor") soon.",
                     targetDate: exactAppointmentDate,
-                    minutesBefore: 60
+                    minutesBefore: 0
                 )
+                NotificationManager.shared.sendInstantNotification(id: appointmentID.uuidString, title: "Upcoming Appointment 📅", body: "Reminder: You have an appointment booked with \(doctor.name ?? "your doctor") soon.")
             }
             
             withAnimation(.easeInOut(duration: 0.4)) {

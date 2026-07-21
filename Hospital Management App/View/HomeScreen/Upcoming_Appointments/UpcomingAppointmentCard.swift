@@ -79,7 +79,7 @@ struct UpcomingAppointmentCard: View {
                             Image(systemName: "calendar")
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
-                            Text("Jul 18, 2026")
+                            Text(formatDate((appointment?.date)!))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -88,7 +88,7 @@ struct UpcomingAppointmentCard: View {
                             Image(systemName: "clock")
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
-                            Text("10:30 AM")
+                            Text(appointment?.timeSlot ?? "10:00 AM")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -129,7 +129,13 @@ struct UpcomingAppointmentCard: View {
         switch status?.lowercased() {
         case "completed": return .green
         case "canceled": return .red
-        default: return .orange // Pending / Scheduled
+        default: return .orange
         }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM dd, yyyy"
+        return formatter.string(from: date)
     }
 }

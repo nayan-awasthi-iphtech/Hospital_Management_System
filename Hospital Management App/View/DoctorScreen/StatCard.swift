@@ -29,7 +29,7 @@ struct StatCard: View {
             .font(.caption2)
             .foregroundColor(.primary)
         }
-        .frame(width: .infinity)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .background(Color(.systemBackground))
         .cornerRadius(16)

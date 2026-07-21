@@ -13,7 +13,6 @@ struct Hospital_Management_AppApp: App {
     let persistenceController = PersistenceController.shared
     
     init(){
-        
         NotificationManager.shared.requestNotificationPermission()
     }
 

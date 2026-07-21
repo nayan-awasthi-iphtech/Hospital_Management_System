@@ -73,6 +73,8 @@
         <attribute name="insuranceDetails" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="phone" optional="YES" attributeType="String"/>
+        <attribute name="policyId" optional="YES" attributeType="String"/>
+        <attribute name="weight" optional="YES" attributeType="String"/>
         <relationship name="user_appointment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_user" inverseEntity="Appointment"/>
         <relationship name="user_prescription" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_user" inverseEntity="Prescription"/>
         <relationship name="user_report" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Report" inverseName="report_user" inverseEntity="Report"/>

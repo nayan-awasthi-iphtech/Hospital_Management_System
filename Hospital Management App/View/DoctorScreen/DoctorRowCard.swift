@@ -21,7 +21,6 @@ struct DoctorRowCard: View {
                     .scaledToFill()
                     .frame(width: 50, height: 50)
                     .clipShape(Circle())
-                    .foregroundColor(.blue.opacity(0.7))
                     .foregroundStyle(Color.red)
             } else {
                 Image(systemName: "person.crop.circle.fill")
