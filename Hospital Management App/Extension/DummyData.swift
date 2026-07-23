@@ -72,7 +72,13 @@ extension User {
             user.dob = calendar.date(from: dateComponents) ?? Date()
         }
         
-        try? viewContext.save()
+        do {
+            try viewContext.save()
+            print("User dummy data created successfully!")
+        } catch {
+            print("Error saving user dummy data: \(error.localizedDescription)")
+        }
+        
     }
 }
 
@@ -94,7 +100,13 @@ extension Doctor {
             }
         }
         
-        try? viewContext.save()
+        do {
+            try viewContext.save()
+            print("Doctor dummy data created successfully!")
+        } catch {
+            print("Error saving Doctor dummy data: \(error.localizedDescription)")
+        }
+        
     }
 }
 
@@ -125,11 +137,18 @@ extension Appointment {
             appointment.date = calendar.date(byAdding: .day, value: i, to: Date()) ?? Date()
         }
         
-        try? viewContext.save()
+        do {
+            try viewContext.save()
+            print("Appointment dummy data created successfully!")
+        } catch {
+            print("Error saving Appoinment dummy data: \(error.localizedDescription)")
+        }
+        
     }
 }
 
 extension Prescription {
+    
     static func PrescriptionDummyData(viewContext:NSManagedObjectContext){
         
         let appointments = (try? viewContext.fetch(Appointment.fetchRequest())) ?? []
@@ -138,28 +157,79 @@ extension Prescription {
         
         guard !appointments.isEmpty else { return }
         
-        let medicines = ["Amoxicillin", "Lisinopril", "Ibuprofen", "Metformin", "Atorvastatin"]
-        let dosages = ["500mg", "10mg", "400mg", "500mg", "20mg"]
-        let frequencies = ["3x daily", "Once daily", "As needed", "Twice daily", "At bedtime"]
-        let states = [true, false, true, false, true]
+        let doctorNotes = [
+            "Take with a full glass of water in the morning.",
+            "Take after meals. Avoid consuming alcohol.",
+            "Take before bedtime. Do not skip doses.",
+            "Take once daily with breakfast.",
+            "Take twice daily after food as needed."
+        ]
         
         let calendar = Calendar.current
         
         for i in 0..<5 {
             let prescription = Prescription(context: viewContext)
             prescription.id = UUID()
-            prescription.medicineName = medicines[i]
-            prescription.dosage = dosages[i]
-            
-            prescription.frequency = frequencies[i]
-            prescription.isTaken = states[i]
+            prescription.notes = doctorNotes[i]
             prescription.startDate = calendar.date(byAdding: .day,value: -i, to: Date()) ?? Date()
             prescription.prescription_appointment = appointments[i % appointments.count]
             prescription.prescription_user = users[i % users.count]
             prescription.prescription_doctor = doctors[i % doctors.count]
         }
         
-        try? viewContext.save()
+        do {
+            try viewContext.save()
+            print("Prescription dummy data created successfully!")
+        } catch {
+            print("Error saving Prescription dummy data: \(error.localizedDescription)")
+        }
+        
     }
 }
 
+extension Medicine {
+    static func MedicineDummyData(viewContext: NSManagedObjectContext) {
+        
+        let users = (try? viewContext.fetch(User.fetchRequest())) ?? []
+        let prescriptions = (try? viewContext.fetch(Prescription.fetchRequest())) ?? []
+        
+        guard !users.isEmpty else {
+            print("Please create User dummy data first!")
+            return
+        }
+        
+        let names = ["Amlodipine", "Metformin", "Atorvastatin", "Vitamin D3"]
+        let dosages = ["5mg", "500mg", "10mg", "1000 IU"]
+        let categories = ["Blood Pressure", "Diabetes", "Cholesterol", "Supplement"]
+        let frequencies = ["Once daily", "Twice daily", "Once daily", "Once daily"]
+        let nextTimes = ["8:00 AM", "2:00 PM", "9:00 PM", "8:00 AM"]
+        let states = [true, false, false, true]
+        let daysLeftList: [Int16] = [15, 5, 20, 30]
+        
+        for i in 0..<names.count {
+            let medicine = Medicine(context: viewContext)
+            medicine.id = UUID()
+            medicine.name = names[i]
+            medicine.dosage = dosages[i]
+            medicine.category = categories[i]
+            medicine.frequency = frequencies[i]
+            medicine.nextTime = nextTimes[i]
+            medicine.isTaken = states[i]
+            medicine.daysLeft = daysLeftList[i]
+            
+            
+            medicine.medicine_user = users[0]
+            
+            if !prescriptions.isEmpty {
+                medicine.medicine_prescription = prescriptions[i % prescriptions.count]
+            }
+        }
+        
+        do {
+            try viewContext.save()
+            print("Medicine dummy data created successfully!")
+        } catch {
+            print("Error saving medicine dummy data: \(error.localizedDescription)")
+        }
+    }
+}

@@ -42,6 +42,11 @@ struct RootTabView: View {
                     UserProfileView()
                         .tabItem { Label("User", systemImage: "person.fill") }
                         .tag(4)
+                    MedicineDetailView()
+                        .tabItem{
+                            Label("Medicine",systemImage: "person.fill")
+                        }
+                        .tag(5)
                 }
                 .tint(.blue)
                 .environmentObject(user)

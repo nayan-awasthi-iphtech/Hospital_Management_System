@@ -84,7 +84,7 @@ struct UserHeaderCardView: View {
         .padding(.horizontal)
         .fullScreenCover(isPresented: $showExpandedQR){
             ExpandedQRModalView(
-                isPresented: $showExpandedQR, patientName: user.name ?? "Unknown Patient", patientID:patientIDText ?? "Patient_Id"
+                isPresented: $showExpandedQR, patientName: user.name ?? "Unknown Patient", patientID:patientIDText
             )
         }
     }

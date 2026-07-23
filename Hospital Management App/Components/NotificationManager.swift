@@ -68,7 +68,6 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         content.body = body
         content.sound = .default
         
-        // FIXED: Set timeInterval to 1 (0 causes an immediate crash)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 10, repeats: false)
         let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
         

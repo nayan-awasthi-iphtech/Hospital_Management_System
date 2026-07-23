@@ -25,16 +25,16 @@ struct HomeScreen: View {
     ) private var appointments: FetchedResults<Appointment>
     
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Prescription.medicineName, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
         animation: .default
-    ) private var prescriptions: FetchedResults<Prescription>
+    ) private var prescriptions: FetchedResults<Medicine>
 
     var body: some View {
         
         let currentUser = users.first
         
         let userAppointments = appointments.filter { $0.appointment_user == currentUser }
-        let userPrescription = prescriptions.filter { $0.prescription_user == currentUser }
+        let userPrescription = prescriptions.filter { $0.medicine_user == currentUser }
         
         NavigationStack {
             ZStack {
@@ -87,7 +87,7 @@ struct HomeScreen: View {
                         
                         UpcomingAppointmentCard(appointment: userAppointments.first, selectedTab:$selectedTab)
                         
-                        PendingMedicinesSection(prescriptions: userPrescription)
+                        PendingMedicinesSection()
                     }
                 }
             }

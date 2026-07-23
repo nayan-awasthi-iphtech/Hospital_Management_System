@@ -9,7 +9,7 @@ internal import CoreData
 
 struct PersistenceController {
     static let shared = PersistenceController()
-
+    
     @MainActor
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
@@ -19,12 +19,13 @@ struct PersistenceController {
         Doctor.DoctorDummyData(viewContext: viewContext)
         Appointment.AppointmentDummyData(viewContext: viewContext)
         Prescription.PrescriptionDummyData(viewContext: viewContext)
+        Medicine.MedicineDummyData(viewContext: viewContext)
         
         return result
     }()
-
+    
     let container: NSPersistentContainer
-
+    
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Hospital_Management_App")
         if inMemory {
@@ -54,7 +55,9 @@ struct PersistenceController {
                 Doctor.DoctorDummyData(viewContext: context)
                 Appointment.AppointmentDummyData(viewContext: context)
                 Prescription.PrescriptionDummyData(viewContext: context)
-                print("Permanent database seeding successful!")
+                Medicine.MedicineDummyData(viewContext: context)
+                try context.save()
+                print("Permanent database seeding successful and saved to disk!")
             }
         } catch {
             print("Failed to look up or write persistent seed entries: \(error)")

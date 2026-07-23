@@ -28,6 +28,10 @@ struct UserProfileView: View {
                     Divider().opacity(0.5)
                     
                     InsuranceDetailsCardView(user: currentUser)
+                    
+                    Divider().opacity(0.5)
+                    
+                    BMICalculatorView(currentUser: currentUser)
                 }
             }
             .navigationTitle("Profile")
