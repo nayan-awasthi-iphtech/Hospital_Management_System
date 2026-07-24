@@ -29,6 +29,18 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
+    <entity name="HealthLog" representedClassName="HealthLog" syncable="YES" codeGenerationType="class">
+        <attribute name="bpm" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="spo2" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="healthLog_user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="user_healthLog" inverseEntity="User"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="id"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
     <entity name="Medicine" representedClassName="Medicine" syncable="YES" codeGenerationType="class">
         <attribute name="category" optional="YES" attributeType="String"/>
         <attribute name="daysLeft" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -91,6 +103,7 @@
         <attribute name="policyId" optional="YES" attributeType="String"/>
         <attribute name="weight" optional="YES" attributeType="String"/>
         <relationship name="user_appointment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_user" inverseEntity="Appointment"/>
+        <relationship name="user_healthLog" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="HealthLog" inverseName="healthLog_user" inverseEntity="HealthLog"/>
         <relationship name="user_medicine" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Medicine" inverseName="medicine_user" inverseEntity="Medicine"/>
         <relationship name="user_prescription" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_user" inverseEntity="Prescription"/>
         <relationship name="user_report" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Report" inverseName="report_user" inverseEntity="Report"/>

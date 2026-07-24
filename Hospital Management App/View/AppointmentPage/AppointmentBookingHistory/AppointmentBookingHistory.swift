@@ -4,6 +4,7 @@
 //
 //  Created by iPHTech 30 on 17/07/26.
 //
+
 import SwiftUI
 internal import CoreData
 
@@ -18,7 +19,7 @@ struct AppointmentBookingHistory: View {
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: false)],
         animation: .default
-    )  private var appointments:FetchedResults<Appointment>
+    ) private var appointments: FetchedResults<Appointment>
     
     @State private var selectedTab = 0
     @State private var appointemntToReschedule: Appointment? = nil
@@ -26,22 +27,62 @@ struct AppointmentBookingHistory: View {
     var body: some View {
         let currentUser = users.first
         
-        NavigationStack {
-            VStack {
+        ZStack {
+            // MARK: - Premium Warm Light Background Canvas
+            ZStack {
+                // Base Soft Off-White / Cream
+                Color(red: 0.96, green: 0.95, blue: 0.93)
+                    .ignoresSafeArea()
+                
+                // Top Light Gold Glow
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.40),
+                        Color.clear
+                    ],
+                    center: .topLeading,
+                    startRadius: 20,
+                    endRadius: 400
+                )
+                .ignoresSafeArea()
+                
+                // Mid Warm Ambient Glow
+                RadialGradient(
+                    colors: [
+                        Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.30),
+                        Color.clear
+                    ],
+                    center: .center,
+                    startRadius: 50,
+                    endRadius: 500
+                )
+                .ignoresSafeArea()
+            }
+            
+            VStack(spacing: 12) {
+                // MARK: - Centered Top Title Header
+                Text("Appointments")
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .foregroundColor(Color(red: 0.1, green: 0.1, blue: 0.12))
+                    .tracking(0.5)
+
+                
                 Picker("", selection: $selectedTab) {
                     Text("Upcoming").tag(0)
                     Text("History").tag(1)
                 }
                 .pickerStyle(.segmented)
-                .padding()
+                .padding(.horizontal, 16)
                 
                 if filteredAppointments(for: currentUser).isEmpty {
+                    Spacer()
                     ContentUnavailableView(
                         "No Appointments",
                         systemImage: "calendar.badge.clock",
                         description: Text(selectedTab == 0 ? "You don't have any upcoming appointments scheduled." : "Your appointment history is empty.")
                     )
-                    .background(Color(.systemGroupedBackground))
+                    .foregroundStyle(Color(red: 0.45, green: 0.38, blue: 0.32))
+                    Spacer()
                 } else {
                     List {
                         ForEach(filteredAppointments(for: currentUser)) { app in
@@ -54,32 +95,31 @@ struct AppointmentBookingHistory: View {
                             )
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
                         .onDelete(perform: { offsets in
                             deleteAppointmentItems(at: offsets, for: currentUser)
                         })
                     }
                     .listStyle(.plain)
-                    .background(Color(.systemGroupedBackground))
+                    .scrollContentBackground(.hidden)
                 }
             }
-            .navigationTitle("Appointments")
-            .sheet(item: $appointemntToReschedule) { targetAppointment in
-                RescheduleSheetView(
-                    appointment: targetAppointment,
-                    onDismiss: {
-                        self.appointemntToReschedule = nil
-                    }
-                )
-            }
+        }
+        .sheet(item: $appointemntToReschedule) { targetAppointment in
+            RescheduleSheetView(
+                appointment: targetAppointment,
+                onDismiss: {
+                    self.appointemntToReschedule = nil
+                }
+            )
         }
     }
     
     private func filteredAppointments(for user: User?) -> [Appointment] {
         guard let currentUser = user else { return [] }
         
-        let userAppointments = appointments.filter { $0.appointment_user == currentUser}
+        let userAppointments = appointments.filter { $0.appointment_user == currentUser }
         
         if selectedTab == 0 {
             return userAppointments.filter { app in
@@ -97,7 +137,7 @@ struct AppointmentBookingHistory: View {
     }
     
     private func cancelAppointment(_ app: Appointment) {
-        withAnimation{
+        withAnimation {
             app.status = "Cancelled"
             
             do {
@@ -109,8 +149,8 @@ struct AppointmentBookingHistory: View {
         }
     }
     
-    private func deleteAppointmentItems(at offsets: IndexSet, for user: User?) {
-        let itemsToDelete = offsets.map { filteredAppointments(for: user)[$0] }
+    private func deleteAppointmentItems(at id: IndexSet, for user: User?) {
+        let itemsToDelete = id.map { filteredAppointments(for: user)[$0] }
         
         withAnimation {
             itemsToDelete.forEach(viewContext.delete)

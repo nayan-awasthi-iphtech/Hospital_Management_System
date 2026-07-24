@@ -17,7 +17,7 @@ struct DynamicReportRowCard: View {
                 Color.blue.opacity(0.1)
                     .frame(width: 50, height: 50)
                     .cornerRadius(12)
-                Image(systemName: report.uploadedBy == "Hospital" ? "building.md.fill" : "person.fill")
+                Image(systemName: report.uploadedBy == "Hospital" ? "building.2.fill" : "person.fill")
                     .foregroundColor(.blue)
                     .font(.system(size: 18))
             }
@@ -41,8 +41,7 @@ struct DynamicReportRowCard: View {
             }
             
             Spacer()
-            
-            // UploadedBy Identifier Badge Markup
+        
             Text(report.reportType ?? "General")
                 .font(.system(size: 11, weight: .bold))
                 .padding(.horizontal, 8)

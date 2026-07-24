@@ -15,28 +15,28 @@ struct UserHeaderCardView: View {
     @State private var showExpandedQR = false
     
     private var userName: String {
-            user.name ?? "Unknown"
-        }
+        user.name ?? "Unknown"
+    }
         
-        private var patientIDText: String {
-            let idString = user.id?.uuidString.prefix(8) ?? "N/A"
-            return "Patient ID: \(idString)"
-        }
+    private var patientIDText: String {
+        let idString = user.id?.uuidString.prefix(8) ?? "N/A"
+        return "Patient ID: \(idString)"
+    }
     
     var body: some View {
-        VStack(spacing:20){
-            HStack(spacing:16){
+        VStack(spacing: 20) {
+            HStack(spacing: 16) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 25, style: .continuous)
-                        .fill(.ultraThinMaterial)
+                    Circle()
+                        .fill(Color.blue.opacity(0.12))
                         .frame(width: 56, height: 56)
-                        .background(Color.gray)
+                    
                     Image(systemName: "person.fill")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundStyle(.blue)
                 }
                 
-                VStack(alignment: .leading, spacing: 4){
+                VStack(alignment: .leading, spacing: 4) {
                     Text(userName)
                         .font(.title3)
                         .fontWeight(.bold)
@@ -49,47 +49,44 @@ struct UserHeaderCardView: View {
                 
                 Spacer()
                 
-                Button(action:{ showExpandedQR = true}) {
+                Button(action: { showExpandedQR = true }) {
                     Image(systemName: "qrcode")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(.blue)
                         .padding(10)
-                        .background(.ultraThinMaterial, in: Circle())
-                        .overlay(Circle().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+                        .background(Color.blue.opacity(0.08), in: Circle())
                 }
             }
             
             Divider()
                 .opacity(0.5)
             
-            HStack{
-                UserStatViewItem(title:"Blood Group", value: user.bloodGroup ?? "A+")
+            HStack {
+                UserStatViewItem(title: "Blood Group", value: user.bloodGroup ?? "A+")
                 Spacer()
                 UserStatViewItem(title: "Age", value: CalculateAge(from: user.dob))
                 Spacer()
-                UserStatViewItem(title:"Weight", value: user.weight ?? "99")
+                UserStatViewItem(title: "Weight", value: user.weight ?? "99")
             }
         }
-        .padding(12)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(.white.opacity(0.15), lineWidth: 1)
-                )
-                .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 10)
-                .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 1)
+                .fill(Color(.white).opacity(0.8))
+                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
+                .shadow(color: Color.black.opacity(0.02), radius: 2, x: 0, y: 1)
         )
         .padding(.horizontal)
-        .fullScreenCover(isPresented: $showExpandedQR){
+        .fullScreenCover(isPresented: $showExpandedQR) {
             ExpandedQRModalView(
-                isPresented: $showExpandedQR, patientName: user.name ?? "Unknown Patient", patientID:patientIDText
+                isPresented: $showExpandedQR,
+                patientName: user.name ?? "Unknown Patient",
+                patientID: patientIDText
             )
         }
     }
     
-    private func CalculateAge(from date:Date?) -> String{
+    private func CalculateAge(from date: Date?) -> String {
         guard let dob = date else { return "99 years" }
         let age = Calendar.current.dateComponents([.year], from: dob, to: Date()).year ?? 0
         return "\(age) years"
@@ -108,4 +105,3 @@ struct UserHeaderCardView: View {
     return UserHeaderCardView(user: sampleUser)
         .environment(\.managedObjectContext, context)
 }
-

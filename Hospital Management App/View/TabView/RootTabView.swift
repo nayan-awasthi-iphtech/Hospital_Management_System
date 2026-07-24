@@ -11,6 +11,7 @@ internal import CoreData
 struct RootTabView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedTab = 0
+    
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)]
     ) private var users: FetchedResults<User>
@@ -19,32 +20,64 @@ struct RootTabView: View {
         users.first
     }
 
+    init() {
+        // Standard iOS Glass/Blur tab bar setup
+        let appearance = UITabBarAppearance()
+        appearance.configureWithDefaultBackground()
+        
+        // Active item styling
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor.systemBlue
+        ]
+        
+        // Inactive item styling
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor.secondaryLabel
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.secondaryLabel
+        ]
+        
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+    }
+
     var body: some View {
         Group {
             if let user = currentUser {
                 SwiftUI.TabView(selection: $selectedTab) {
                     HomeScreen(selectedTab: $selectedTab)
-                        .tabItem { Label("Home", systemImage: "house.fill") }
+                        .tabItem {
+                            Label("Home", systemImage: "house.fill")
+                        }
                         .tag(0)
                     
                     AppointmentBookingHistory()
-                        .tabItem { Label("Appointments", systemImage: "calendar.badge.clock") }
+                        .tabItem {
+                            Label("Appointments", systemImage: "calendar.badge.clock")
+                        }
                         .tag(1)
                     
                     DoctorsListView(selectedTab: $selectedTab)
-                        .tabItem { Label("Doctors", systemImage: "person.badge.plus") }
+                        .tabItem {
+                            Label("Doctors", systemImage: "cross.case.fill")
+                        }
                         .tag(2)
                     
                     MedicalReportsDashboard()
-                        .tabItem { Label("Reports", systemImage: "doc.badge.plus") }
+                        .tabItem {
+                            Label("Reports", systemImage: "doc.text.fill")
+                        }
                         .tag(3)
                     
                     UserProfileView()
-                        .tabItem { Label("User", systemImage: "person.fill") }
+                        .tabItem {
+                            Label("User", systemImage: "person.fill")
+                        }
                         .tag(4)
+                    
                     MedicineDetailView()
-                        .tabItem{
-                            Label("Medicine",systemImage: "person.fill")
+                        .tabItem {
+                            Label("Medicine", systemImage: "pill.fill")
                         }
                         .tag(5)
                 }

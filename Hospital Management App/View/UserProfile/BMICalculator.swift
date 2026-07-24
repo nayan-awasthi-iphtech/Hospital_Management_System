@@ -20,14 +20,8 @@ struct BMICalculatorView: View {
             return "23.8"
         }
         
-        let bmiDouble = bmiCalculator(height: heightVal, weight: weightVal)
+        let bmiDouble = bmiCalculatorDouble(height: heightVal, weight: weightVal)
         return String(format: "%.1f", bmiDouble)
-    }
-    
-    private func bmiCalculator(height: Double, weight: Double) -> String {
-        guard height > 0 else { return "0.0" }
-        let bmi = weight / pow(height / 100, 2)
-        return String(format: "%.1f", bmi)
     }
     
     private func bmiCalculatorDouble(height: Double, weight: Double) -> Double {
@@ -49,7 +43,7 @@ struct BMICalculatorView: View {
     
     private var bmiStatus: String {
         switch currentBMIDouble {
-            case ..<18.5:
+        case ..<18.5:
             return "Underweight"
         case 18.5..<24.9:
             return "Normal"
@@ -77,11 +71,11 @@ struct BMICalculatorView: View {
                     Text(currentUser.height ?? "175")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .tertiarySystemFill))
+                        .background(Color.white.opacity(0.8))
                         .cornerRadius(12)
-                        .keyboardType(.numberPad)
                 }
             
                 VStack(alignment: .leading, spacing: 6) {
@@ -92,11 +86,11 @@ struct BMICalculatorView: View {
                     Text(currentUser.weight ?? "70")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .tertiarySystemFill))
+                        .background(Color.white.opacity(0.8))
                         .cornerRadius(12)
-                        .keyboardType(.numberPad)
                 }
             }
             
@@ -126,8 +120,27 @@ struct BMICalculatorView: View {
             .cornerRadius(14)
         }
         .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .cornerRadius(18)
-        .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.65))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.8), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+        )
+        .padding(.horizontal)
+    }
+}
+
+#Preview {
+    let context = PersistenceController.preview.container.viewContext
+    let request: NSFetchRequest<User> = User.fetchRequest()
+    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
+    
+    ZStack {
+        Color(red: 0.96, green: 0.95, blue: 0.93)
+            .ignoresSafeArea()
+        BMICalculatorView(currentUser: sampleUser)
     }
 }

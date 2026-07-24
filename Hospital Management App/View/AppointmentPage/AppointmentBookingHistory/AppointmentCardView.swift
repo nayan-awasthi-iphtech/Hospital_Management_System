@@ -10,6 +10,7 @@ internal import CoreData
 
 struct AppointmentCardView: View {
     @ObservedObject var appointment: Appointment
+    
     var onCancel: () -> Void
     var onReschedule: () -> Void
     

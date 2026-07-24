@@ -9,11 +9,11 @@ internal import CoreData
 import SwiftUI
 
 extension User {
-    static func UserDummyData(viewContext: NSManagedObjectContext){
+    static func UserDummyData(viewContext: NSManagedObjectContext)->User?{
         let names = ["John Doe", "Jane Smith", "Robert Chen", "Emily Rodriguez", "William Taylor"]
         let bloodGroups = ["O+", "A-", "B+", "AB+", "O-"]
         let allergies = ["Penicillin", "None", "Peanuts", "Sulfa Drugs", "None"]
-        
+        var usr:User?
         let addresses = [
             "123 Innovation Way, New York, NY",
             "456 Oak Avenue, Los Angeles, CA",
@@ -70,15 +70,18 @@ extension User {
             dateComponents.month = (i * 2) + 1
             dateComponents.day = (i * 5) + 1
             user.dob = calendar.date(from: dateComponents) ?? Date()
+            
+            if names[i].lowercased().contains("em"){ usr = user}
         }
         
         do {
             try viewContext.save()
+            return usr ?? User()
             print("User dummy data created successfully!")
         } catch {
             print("Error saving user dummy data: \(error.localizedDescription)")
         }
-        
+        return nil
     }
 }
 
@@ -230,6 +233,34 @@ extension Medicine {
             print("Medicine dummy data created successfully!")
         } catch {
             print("Error saving medicine dummy data: \(error.localizedDescription)")
+        }
+    }
+}
+
+extension  HealthLog {
+    static func HealthLogDummyData(viewContext: NSManagedObjectContext, user: User) {
+        
+        
+        let calendar = Calendar.current
+        
+        let bpms: [Double] = [76.0, 74.0, 71.0, 69.0, 72.0]
+        let spo2Values: [Double] = [97.0, 98.0, 99.0, 98.0, 98.5]
+        
+        for i in 0..<5 {
+            let log = HealthLog(context: viewContext)
+            log.id = UUID()
+            log.bpm = bpms[i]
+            log.spo2 = spo2Values[i]
+            log.date = calendar.date(byAdding: .month, value: -(4 - i), to: Date()) ?? Date()
+            
+            log.healthLog_user = user
+        }
+        
+        do {
+            try viewContext.save()
+            print("HealthLog dummy data created successfully!")
+        } catch {
+            print("Error saving HealthLog dummy data: \(error.localizedDescription)")
         }
     }
 }

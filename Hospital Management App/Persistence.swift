@@ -13,14 +13,16 @@ struct PersistenceController {
     @MainActor
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
-        let viewContext = result.container.viewContext
+        let context = result.container.viewContext
         
-        User.UserDummyData(viewContext: viewContext)
-        Doctor.DoctorDummyData(viewContext: viewContext)
-        Appointment.AppointmentDummyData(viewContext: viewContext)
-        Prescription.PrescriptionDummyData(viewContext: viewContext)
-        Medicine.MedicineDummyData(viewContext: viewContext)
-        
+        let usr = User.UserDummyData(viewContext: context)
+        Doctor.DoctorDummyData(viewContext: context)
+        Appointment.AppointmentDummyData(viewContext: context)
+        Prescription.PrescriptionDummyData(viewContext: context)
+        Medicine.MedicineDummyData(viewContext: context)
+        if let us = usr{
+            HealthLog.HealthLogDummyData(viewContext: context, user:us)
+        }
         return result
     }()
     
@@ -51,12 +53,14 @@ struct PersistenceController {
             let count = try context.count(for: request)
             if count == 0 {
                 print("Database empty. Seeding permanent entities sequentially...")
-                User.UserDummyData(viewContext: context)
+                let usr = User.UserDummyData(viewContext: context)
                 Doctor.DoctorDummyData(viewContext: context)
                 Appointment.AppointmentDummyData(viewContext: context)
                 Prescription.PrescriptionDummyData(viewContext: context)
                 Medicine.MedicineDummyData(viewContext: context)
-                try context.save()
+                if let us = usr{
+                    HealthLog.HealthLogDummyData(viewContext: context, user:us)
+                }
                 print("Permanent database seeding successful and saved to disk!")
             }
         } catch {
@@ -64,3 +68,4 @@ struct PersistenceController {
         }
     }
 }
+

@@ -1,3 +1,9 @@
+//
+//  MedicineDetailView.swift
+//  Hospital Management App
+//
+//  Created by iPHTech 30 on 23/07/26.
+//
 
 import SwiftUI
 internal import CoreData
@@ -24,19 +30,25 @@ struct MedicineDetailView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        ZStack {
+            Color(red: 0.96, green: 0.95, blue: 0.93)
+                .ignoresSafeArea()
+            
             ScrollView(showsIndicators: false) {
+                
+                Text("Medicines")
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .foregroundColor(Color(red: 0.1, green: 0.1, blue: 0.12))
+                    .tracking(0.5)
+                
                 VStack(spacing: 20) {
                     
-                    Text("Medicines")
-                        .font(.system(size: 34, weight: .bold))
-                        .padding(.top, 8)
                     MedicineProgressHeaderView(
                         takenCount: takenCount,
                         totalCount: totalCount
                     )
                     
-                    VStack(spacing: 8) {
+                    VStack(spacing: 12) {
                         ForEach(medicines, id: \.objectID) { medicine in
                             MedicineCardView(medicine: medicine, onToggleTaken: {
                                 refreshToggle.toggle()
@@ -46,10 +58,9 @@ struct MedicineDetailView: View {
                     
                     WaterIntakeCardView()
                 }
-                .padding(.horizontal, 16)
                 .padding(.top, 12)
+                .padding(.bottom, 24)
             }
-            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
