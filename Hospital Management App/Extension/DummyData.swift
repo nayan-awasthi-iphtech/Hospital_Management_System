@@ -9,96 +9,65 @@ internal import CoreData
 import SwiftUI
 
 extension User {
-    static func UserDummyData(viewContext: NSManagedObjectContext)->User?{
-        let names = ["John Doe", "Jane Smith", "Robert Chen", "Emily Rodriguez", "William Taylor"]
-        let bloodGroups = ["O+", "A-", "B+", "AB+", "O-"]
-        let allergies = ["Penicillin", "None", "Peanuts", "Sulfa Drugs", "None"]
-        var usr:User?
-        let addresses = [
-            "123 Innovation Way, New York, NY",
-            "456 Oak Avenue, Los Angeles, CA",
-            "789 Pine Road, San Francisco, CA",
-            "321 Maple Drive, Austin, TX",
-            "654 Cedar Lane, Chicago, IL"
-        ]
-        let emails = ["john.doe@email.com", "jane.smith@email.com", "r.chen@email.com", "emily.r@email.com", "w.taylor@email.com"]
-        let genders = ["Male", "Female", "Male", "Female", "Male"]
-        let heights = ["180 cm", "165 cm", "175 cm", "160 cm", "182 cm"]
-        let weights = ["65", "85", "75", "45", "65"]
-        let phones = ["+1 (555) 019-2831", "+1 (555) 014-9928", "+1 (555) 012-4819", "+1 (555) 016-3391", "+1 (555) 019-7722"]
+    @discardableResult
+    static func UserDummyData(viewContext: NSManagedObjectContext) -> User? {
+        let user = User(context: viewContext)
+        user.id = UUID()
+        user.name = "Emily Rodriguez"
+        user.bloodGroup = "AB+"
+        user.allergies = "Sulfa Drugs"
+        user.emergencyContact = 5550165
+        user.insuranceDetails = "Cigna Open Access Plus"
+        user.policyId = "#CG-772911-B"
+        user.address = "321 Maple Drive, Austin, TX"
+        user.email = "emily.r@email.com"
+        user.gender = "Female"
+        user.height = "160"
+        user.weight = "55"
+        user.phone = "+1 (555) 016-3391"
         
-        let insuranceDetailsPool = [
-            "BlueShield Platinum PPO",
-            "UnitedHealth Care Choice Plus",
-            "Aetna Premium Health HMO",
-            "Cigna Open Access Plus",
-            "Humana Gold Value Plan"
-        ]
-        
-        let PolicyIdDetails = ["#BS-994821-X", "#UH-883719-A", "#AE-441029-M", "#CG-772911-B", "#HU-110293-K"]
-        
-        let emergencyContactsPool: [Int32] = [
-            5550143,
-            5550188,
-            5550121,
-            5550165,
-            5550190
-        ]
-        
-        let calendar = Calendar.current
-        let birthYears = [1985, 1992, 1978, 2000, 1989]
-        
-        for i in 0..<5 {
-            let user = User(context: viewContext)
-            user.id = UUID()
-            user.name = names[i]
-            user.bloodGroup = bloodGroups[i]
-            user.allergies = allergies[i]
-            user.emergencyContact = emergencyContactsPool[i]
-            user.insuranceDetails = insuranceDetailsPool[i]
-            user.policyId = PolicyIdDetails[i]
-            
-            user.address = addresses[i]
-            user.email = emails[i]
-            user.gender = genders[i]
-            user.height = heights[i]
-            user.weight = weights[i]
-            user.phone = phones[i]
-            
-            var dateComponents = DateComponents()
-            dateComponents.year = birthYears[i]
-            dateComponents.month = (i * 2) + 1
-            dateComponents.day = (i * 5) + 1
-            user.dob = calendar.date(from: dateComponents) ?? Date()
-            
-            if names[i].lowercased().contains("em"){ usr = user}
-        }
+        var dateComponents = DateComponents()
+        dateComponents.year = 2000
+        dateComponents.month = 1
+        dateComponents.day = 1
+        user.dob = Calendar.current.date(from: dateComponents) ?? Date()
         
         do {
             try viewContext.save()
-            return usr ?? User()
-            print("User dummy data created successfully!")
+            print("Single user created successfully!")
+            return user
         } catch {
-            print("Error saving user dummy data: \(error.localizedDescription)")
+            print("Error saving user: \(error.localizedDescription)")
         }
         return nil
     }
 }
 
 extension Doctor {
-    static func DoctorDummyData(viewContext:NSManagedObjectContext){
+    static func DoctorDummyData(viewContext: NSManagedObjectContext) {
         let names = ["Dr. Alice Green", "Dr. Brian Patel", "Dr. Clara Oswald", "Dr. David Kim", "Dr. Elena Rostova"]
         let departments = ["Cardiology", "Pediatrics", "Neurology", "Orthopedics", "Dermatology"]
-        let specialties = ["Heart Failure", "General Pediatrics", "Stroke Specialist", "Joint Replacement", "Cosmetic Dermatology"]
+        let experiences: [Int16] = [12, 8, 15, 6, 10]
+        let qualifications = ["MD, FACC", "MD (Pediatrics)", "DM (Neurology), MBBS", "MS (Orthopedics)", "MD, DNB (Dermatology)"]
         
+        let abouts = [
+            "Dr. Alice Green is a highly dedicated cardiologist specializing in non-invasive cardiovascular care and preventive heart health. She is committed to providing compassionate, evidence-based care tailored to each patient.",
+            "Dr. Brian Patel is a caring pediatrician focused on child development, wellness checkups, and early disease prevention. He strives to create a comfortable and welcoming environment for children and their families.",
+            "Dr. Clara Oswald is an experienced neurologist with specialized training in complex brain and nervous system disorders. She focuses on personalized diagnostic strategies and long-term condition management.",
+            "Dr. David Kim is a skilled orthopedic surgeon expertise in sports injuries, joint preservation, and advanced surgical recovery techniques, helping patients return to an active lifestyle.",
+            "Dr. Elena Rostova is a board-certified dermatologist specializing in clinical, surgical, and cosmetic skin care solutions, dedicated to promoting overall skin health and patient confidence."
+        ]
         
         for i in 0..<5 {
             let doctor = Doctor(context: viewContext)
-            doctor.name = names[i]
             doctor.id = UUID()
+            doctor.name = names[i]
             doctor.department = departments[i]
-            doctor.specialty = specialties[i]
-            if let uiImage = UIImage(named: "doctor\(i+1)"){
+            doctor.experienceYears = experiences[i]
+            doctor.qualification = qualifications[i]
+            doctor.about = abouts[i] // Make sure this matches your Core Data attribute name (e.g., doctor.about or doctor.aboutDoctor)
+            
+            if let uiImage = UIImage(named: "doctor\(i+1)") {
                 doctor.imageData = uiImage.jpegData(compressionQuality: 0.8)
             }
         }
@@ -109,10 +78,8 @@ extension Doctor {
         } catch {
             print("Error saving Doctor dummy data: \(error.localizedDescription)")
         }
-        
     }
 }
-
 
 extension Appointment {
     
@@ -196,7 +163,7 @@ extension Medicine {
         let users = (try? viewContext.fetch(User.fetchRequest())) ?? []
         let prescriptions = (try? viewContext.fetch(Prescription.fetchRequest())) ?? []
         
-        guard !users.isEmpty else {
+        guard let user = users.first else {
             print("Please create User dummy data first!")
             return
         }
@@ -219,9 +186,7 @@ extension Medicine {
             medicine.nextTime = nextTimes[i]
             medicine.isTaken = states[i]
             medicine.daysLeft = daysLeftList[i]
-            
-            
-            medicine.medicine_user = users[0]
+            medicine.medicine_user = user
             
             if !prescriptions.isEmpty {
                 medicine.medicine_prescription = prescriptions[i % prescriptions.count]
@@ -237,9 +202,8 @@ extension Medicine {
     }
 }
 
-extension  HealthLog {
+extension HealthLog {
     static func HealthLogDummyData(viewContext: NSManagedObjectContext, user: User) {
-        
         
         let calendar = Calendar.current
         
@@ -252,7 +216,6 @@ extension  HealthLog {
             log.bpm = bpms[i]
             log.spo2 = spo2Values[i]
             log.date = calendar.date(byAdding: .month, value: -(4 - i), to: Date()) ?? Date()
-            
             log.healthLog_user = user
         }
         

@@ -15,11 +15,13 @@
         </uniquenessConstraints>
     </entity>
     <entity name="Doctor" representedClassName="Doctor" syncable="YES" codeGenerationType="class">
+        <attribute name="about" optional="YES" attributeType="String"/>
         <attribute name="department" optional="YES" attributeType="String"/>
+        <attribute name="experienceYears" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="imageData" optional="YES" attributeType="Binary"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="specialty" optional="YES" attributeType="String"/>
+        <attribute name="qualification" optional="YES" attributeType="String"/>
         <relationship name="doctor_appointment" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Appointment" inverseName="appointment_doctor" inverseEntity="Appointment"/>
         <relationship name="doctor_prescription" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Prescription" inverseName="prescription_doctor" inverseEntity="Prescription"/>
         <relationship name="doctor_report" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Report" inverseName="report_doctor" inverseEntity="Report"/>

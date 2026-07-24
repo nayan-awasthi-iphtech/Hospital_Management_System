@@ -24,6 +24,7 @@ struct UploadReportView: View {
     @State private var reportTitle: String = ""
     @State private var reportCategory: String = "Pathology"
     @State private var reportSource: String = "Patient"
+    //    @State private var reportToDoctor: String = "Dr. Alex John"
     @State private var isFilePickerPresented: Bool = false
     @State private var selectedFileName: String = "No file Chosen"
     @State private var selectedDoctor: Doctor? = nil
@@ -42,6 +43,22 @@ struct UploadReportView: View {
                     Picker("Category Type", selection: $reportCategory) {
                         ForEach(categories, id: \.self) { category in
                             Text(category)
+                        }
+                    }
+                }
+                
+                Section(header: Text("Associated Doctor")) {
+                    if doctors.isEmpty {
+                        Text("No doctors available")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Picker("Select Doctor", selection: $selectedDoctor) {
+                            Text("None").tag(Doctor?.none)
+                            ForEach(doctors, id: \.objectID) { doctor in
+                                Text(doctor.name ?? "Dr. Unknown")
+                                    .tag(Optional(doctor))
+                            }
                         }
                     }
                 }

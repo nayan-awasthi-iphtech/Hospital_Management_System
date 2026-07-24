@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Hospital Management App
-//
-//  Created by iPHTech 30 on 15/07/26.
-//
-
 import SwiftUI
 internal import CoreData
 
@@ -13,38 +6,40 @@ struct HomeScreen: View {
     @Environment(\.managedObjectContext) var viewContext
     @Binding var selectedTab: Int
     
-    // CHANGED: Using NSSortDescriptor to prevent the NSObject conversion crash
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)],
-        animation: .default
-    ) private var users: FetchedResults<User>
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.id, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: true)],
         animation: .default
     ) private var appointments: FetchedResults<Appointment>
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
         animation: .default
-    ) private var prescriptions: FetchedResults<Medicine>
+    ) private var medicines: FetchedResults<Medicine>
 
+    private var currentUser: User? {
+        PersistenceController.shared.currentUser
+    }
+    
+    private var upcomingUserAppointment: [Appointment] {
+        let now = Date()
+        return appointments.filter{ appointment in
+            let isFutureorToday = (appointment.date ?? .distantPast) >= Calendar.current.startOfDay(for: now)
+            let isNotCancelled = appointment.status?.lowercased() != "canceled" && appointment.status?.lowercased() != "completed"
+            
+            return isFutureorToday && isNotCancelled
+        }
+    }
+    
     var body: some View {
-        
-        let currentUser = users.first
-        
         let userAppointments = appointments.filter { $0.appointment_user == currentUser }
-        let userPrescription = prescriptions.filter { $0.medicine_user == currentUser }
+        let userMedicines = medicines.filter { $0.medicine_user == currentUser }
         
         NavigationStack {
             ZStack {
-                // MARK: - Premium Warm Light Background
                 ZStack {
-                    // Base Soft Off-White / Cream
                     Color(red: 0.96, green: 0.95, blue: 0.93)
                         .ignoresSafeArea()
                     
-                    // Top Light Gold/Champagne Glow (Complements header)
                     RadialGradient(
                         colors: [
                             Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.45),
@@ -56,7 +51,6 @@ struct HomeScreen: View {
                     )
                     .ignoresSafeArea()
                     
-                    // Mid Warm-Sand Ambient Glow (Complements card tones)
                     RadialGradient(
                         colors: [
                             Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.35),
@@ -69,11 +63,8 @@ struct HomeScreen: View {
                     .ignoresSafeArea()
                 }
                 
-                // MARK: - Main Content
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
-                        
-                        // Header Card
                         HStack(alignment: .center) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Good Morning,")
@@ -81,7 +72,7 @@ struct HomeScreen: View {
                                     .fontWeight(.medium)
                                     .foregroundStyle(.white.opacity(0.9))
                                 
-                                Text(currentUser?.name ?? "Alex Johnson")
+                                Text(currentUser?.name ?? "User")
                                     .font(.title2)
                                     .bold()
                                     .foregroundStyle(.white)
@@ -92,7 +83,7 @@ struct HomeScreen: View {
                             ZStack(alignment: .topTrailing) {
                                 Image(systemName: "bell.fill")
                                     .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(Color(red: 0.45, green: 0.32, blue: 0.22)) // Warm deep brown icon
+                                    .foregroundColor(Color(red: 0.45, green: 0.32, blue: 0.22))
                                     .padding(12)
                                     .background(
                                         Circle()
@@ -142,20 +133,16 @@ struct HomeScreen: View {
                         .padding(.horizontal, 14)
                         .padding(.top, 11)
                         
-                        // Health Info Summary
                         HealthInfoCard()
                         
-                        // Counter Cards
                         MetricCountersRow(
                             appointmentCount: userAppointments.count,
-                            prescriptionCount: userPrescription.count,
-                            reportCount: 4
+                            prescriptionCount: userMedicines.count,
+                            reportCount: currentUser?.user_report?.count ?? 0
                         )
                         
-                        // Upcoming Appointments
-                        UpcomingAppointmentCard(appointment: userAppointments.first, selectedTab: $selectedTab)
+                        UpcomingAppointmentCard(appointment: upcomingUserAppointment.first, selectedTab: $selectedTab)
                         
-                        // Pending Medicines
                         PendingMedicinesSection()
                     }
                     .padding(.bottom, 24)
@@ -165,10 +152,3 @@ struct HomeScreen: View {
         .navigationBarHidden(true)
     }
 }
-
-
-//#Preview {
-//    HomeScreen()
-//        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-//}
-

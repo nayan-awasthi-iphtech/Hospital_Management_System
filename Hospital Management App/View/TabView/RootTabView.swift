@@ -1,37 +1,22 @@
-//
-//  TabView.swift
-//  Hospital Management App
-//
-//  Created by iPHTech 30 on 15/07/26.
-//
-
 import SwiftUI
 internal import CoreData
 
 struct RootTabView: View {
-    @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedTab = 0
     
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)]
-    ) private var users: FetchedResults<User>
-    
     private var currentUser: User? {
-        users.first
+        PersistenceController.shared.currentUser
     }
-
+    
     init() {
-        // Standard iOS Glass/Blur tab bar setup
         let appearance = UITabBarAppearance()
         appearance.configureWithDefaultBackground()
         
-        // Active item styling
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemBlue
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .foregroundColor: UIColor.systemBlue
         ]
         
-        // Inactive item styling
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor.secondaryLabel
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor.secondaryLabel
@@ -88,14 +73,4 @@ struct RootTabView: View {
             }
         }
     }
-}
-
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    let request: NSFetchRequest<User> = User.fetchRequest()
-    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
-    
-    return RootTabView()
-        .environment(\.managedObjectContext, context)
-        .environmentObject(sampleUser)
 }

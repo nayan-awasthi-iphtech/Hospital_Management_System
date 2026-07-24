@@ -10,6 +10,12 @@ internal import CoreData
 struct PersistenceController {
     static let shared = PersistenceController()
     
+    var currentUser: User? {
+        let request: NSFetchRequest<User> = User.fetchRequest()
+        request.fetchLimit = 1
+        return try? container.viewContext.fetch(request).first
+    }
+    
     @MainActor
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
@@ -20,8 +26,8 @@ struct PersistenceController {
         Appointment.AppointmentDummyData(viewContext: context)
         Prescription.PrescriptionDummyData(viewContext: context)
         Medicine.MedicineDummyData(viewContext: context)
-        if let us = usr{
-            HealthLog.HealthLogDummyData(viewContext: context, user:us)
+        if let us = usr {
+            HealthLog.HealthLogDummyData(viewContext: context, user: us)
         }
         return result
     }()

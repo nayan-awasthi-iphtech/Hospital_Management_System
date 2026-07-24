@@ -26,7 +26,7 @@ struct DoctorRowCard: View {
                 Image(systemName: "person.crop.circle.fill")
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 120, height: 120)
+                    .frame(width: 50, height: 50)
                     .foregroundColor(.gray)
             }
             
@@ -40,10 +40,6 @@ struct DoctorRowCard: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight:.semibold))
-                .foregroundColor(Color(.systemGray3))
         }
         .padding(16)
         .background(

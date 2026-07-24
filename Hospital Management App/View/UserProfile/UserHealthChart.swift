@@ -2,8 +2,6 @@
 //  UserHealthChart.swift
 //  Hospital Management App
 //
-//  Created by iPHTech 30 on 23/07/26.
-//
 
 import SwiftUI
 internal import CoreData
@@ -13,11 +11,22 @@ internal import Combine
 struct UserHealthChart: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    // 1. Observe the user directly so the view re-renders on user property updates
     @ObservedObject var currentUser: User
     
     @State private var selectedMetric: Int = 0
     @State private var isSheetShowing: Bool = false
+    
+    // Alert state variables for dangerous BPM warning
+    @State private var showAlert: Bool = false
+    @State private var alertTitle: String = ""
+    @State private var alertMessage: String = ""
+    
+    // Define clean chart scale boundaries
+    private let bpmMin: Double = 40
+    private let bpmMax: Double = 160
+    
+    private let spo2Min: Double = 80
+    private let spo2Max: Double = 100
     
     // Formatter to convert Date into chart label format
     private let dateFormatter: DateFormatter = {
@@ -26,14 +35,22 @@ struct UserHealthChart: View {
         return formatter
     }()
     
-    // 2. Read directly from the Core Data relationship & sort chronologically
+    // Calculate estimated Max Heart Rate based on user's DOB (220 - age)
+    private var maxHeartRate: Int {
+        if let dob = currentUser.dob { // Check your entity name (user_dob, dob, etc.)
+            let calculatedAge = Calendar.current.dateComponents([.year], from: dob, to: Date()).year ?? 30
+            let validAge = calculatedAge > 0 ? calculatedAge : 30
+            return 220 - validAge
+        }
+        return 220 - 30 // Default fallback (190 BPM)
+    }
+    
+    // Read directly from Core Data relationship & sort chronologically
     private var userLogs: [HealthLog] {
         guard let set = currentUser.user_healthLog as? Set<HealthLog> else {
-            // Fallback iteration directly on NSSet
             let logsArray = currentUser.user_healthLog?.allObjects as? [HealthLog] ?? []
             return logsArray.sorted { ($0.date ?? Date.distantPast) < ($1.date ?? Date.distantPast) }
         }
-        
         return set.sorted { ($0.date ?? Date.distantPast) < ($1.date ?? Date.distantPast) }
     }
     
@@ -77,38 +94,52 @@ struct UserHealthChart: View {
             }
             .pickerStyle(.segmented)
             
-            // Empty State Check
+            // Chart Display
             if userLogs.isEmpty {
                 ContentUnavailableView("No logs available", systemImage: "chart.line.uptrend.xyaxis")
                     .frame(height: 190)
             } else {
-                // Live Chart using userLogs
                 Chart {
                     ForEach(userLogs) { log in
                         let logDate = log.date ?? Date()
-                        let value = (selectedMetric == 0) ? log.bpm : log.spo2
+                        let rawValue = (selectedMetric == 0) ? log.bpm : log.spo2
                         let themeColor: Color = (selectedMetric == 0) ? .red : .blue
                         
+                        // Limits calculation
+                        let currentMin = (selectedMetric == 0) ? bpmMin : spo2Min
+                        let currentMax = (selectedMetric == 0) ? bpmMax : spo2Max
+                        
+                        // Clamp value so chart line stops at top/bottom border without stretching layout
+                        let clampedValue = min(max(rawValue, currentMin), currentMax)
+                        
                         let formattedText = (selectedMetric == 0)
-                            ? "\(Int(value))"
-                            : String(format: "%.1f%%", value)
-
+                        ? "\(Int(rawValue))"
+                        : String(format: "%.1f%%", rawValue)
+                        
                         LineMark(
                             x: .value("Date", logDate),
-                            y: .value("Value", value)
+                            y: .value("Value", clampedValue)
                         )
                         .foregroundStyle(themeColor)
                         .interpolationMethod(.catmullRom)
-
+                        
                         PointMark(
                             x: .value("Date", logDate),
-                            y: .value("Value", value)
+                            y: .value("Value", clampedValue)
                         )
                         .foregroundStyle(themeColor)
-                        .annotation(position: .top, alignment: .center) {
+                        .annotation(position: .top, alignment: .center, spacing: 4) {
                             Text(formattedText)
                                 .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(rawValue > currentMax ? .red : .secondary)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    rawValue > currentMax
+                                    ? Color.red.opacity(0.15)
+                                    : Color.clear
+                                )
+                                .cornerRadius(4)
                         }
                     }
                 }
@@ -120,9 +151,13 @@ struct UserHealthChart: View {
                         AxisGridLine()
                     }
                 }
-                .chartYScale(domain: selectedMetric == 0 ? [50, 150] : [85, 100])
+                .chartYAxis {
+                    AxisMarks(position: .trailing)
+                }
+                .chartYScale(domain: selectedMetric == 0 ? [bpmMin, bpmMax + 15] : [spo2Min, spo2Max + 3])
                 .frame(height: 190)
-                .padding(.vertical, 8)
+                .padding(.top, 10)
+                .clipped() // Ensures chart elements never draw outside the chart box
             }
         }
         .padding(16)
@@ -141,9 +176,13 @@ struct UserHealthChart: View {
                 saveHealthLog(bpm: bpm, spo2: spo2, date: date, userLogs: userLogs)
             }
         }
+        .alert(alertTitle, isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(alertMessage)
+        }
     }
     
-    // Save New Health Log
     private func saveHealthLog(bpm: Double, spo2: Double, date: Date, userLogs: [HealthLog]) {
         let newLog = HealthLog(context: viewContext)
         newLog.id = UUID()
@@ -151,30 +190,43 @@ struct UserHealthChart: View {
         newLog.spo2 = spo2
         newLog.date = date
         
-        // Relate the new log to current user
         newLog.healthLog_user = currentUser
-        print("User log \(userLogs.count)")
         
         do {
             try viewContext.save()
-            // Tell SwiftUI the user object changed so the userLogs array refreshes immediately
             currentUser.objectWillChange.send()
+            
+            let intBpm = Int(bpm)
+            var issues: [String] = []
+            
+            if intBpm > maxHeartRate {
+                issues.append("• Heart Rate (\(intBpm) BPM) exceeds your calculated maximum limit (\(maxHeartRate) BPM).")
+            } else if intBpm < 50 {
+                issues.append("• Heart Rate (\(intBpm) BPM) is dangerously low (below 50 BPM).")
+            }
+            
+            if spo2 < 92.0 {
+                issues.append("• SpO2 level (\(String(format: "%.1f", spo2))%) is below the healthy threshold (92%).")
+            } else if spo2 > 100.0 {
+                issues.append("• SpO2 level (\(String(format: "%.1f", spo2))%) is invalid (cannot exceed 100%).")
+            }
+            
+            if !issues.isEmpty {
+                if issues.count > 1 {
+                    alertTitle = "Critical Health Warning"
+                    alertMessage = "Multiple abnormal vitals detected:\n\n" + issues.joined(separator: "\n") + "\n\nPlease seek medical attention or consult a doctor immediately."
+                } else {
+                    alertTitle = "Health Alert"
+                    alertMessage = issues.first?
+                        .replacingOccurrences(of: "• ", with: "") ?? "Abnormal reading detected."
+                    alertMessage += "\n\nPlease consult a healthcare professional if this persists."
+                }
+                showAlert = true
+            }
+            
             print("Successfully saved health log for \(currentUser.name ?? "User")")
         } catch {
             print("Health log saving issue: \(error.localizedDescription)")
         }
-    }
-}
-
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    let request: NSFetchRequest<User> = User.fetchRequest()
-    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
-    
-    ZStack {
-        Color(red: 0.96, green: 0.95, blue: 0.93)
-            .ignoresSafeArea()
-        UserHealthChart(currentUser: sampleUser)
-            .environment(\.managedObjectContext, context)
     }
 }

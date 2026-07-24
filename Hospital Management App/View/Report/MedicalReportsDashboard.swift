@@ -1,10 +1,3 @@
-//
-//  MedicalReportsDashboard.swift
-//  Hospital Management App
-//
-//  Created by iPHTech 30 on 16/07/26.
-//
-
 import SwiftUI
 internal import CoreData
 
@@ -14,46 +7,41 @@ struct MedicalReportsDashboard: View {
     @EnvironmentObject var user: User
     
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \User.name, ascending: true)]
-    ) private var users: FetchedResults<User>
-    
-    @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Report.date, ascending: false)],
         animation: .default
     ) private var allReports: FetchedResults<Report>
+    
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Doctor.name, ascending: true)],
+        animation: .default
+    ) private var doctors: FetchedResults<Doctor>
     
     @State private var searchText: String = ""
     @State private var selectedOriginFilter: String = "All"
     @State private var isShowingReportUploadSheet: Bool = false
     
+    @State private var reportsToDelete: [Report] = []
+    @State private var showDeleteReportConfirmation: Bool = false
+    
     let filterOptions = ["All", "Patient", "Hospital"]
-
-    private var currentUser: User? {
-        users.first
-    }
     
     private var processedReports: [Report] {
-        guard let activeUser = currentUser else { return [] }
-        
-        return allReports.filter { report in
-            let belongsToUser = report.report_user?.id == activeUser.id
+        allReports.filter { report in
+            let belongsToUser = report.report_user?.id == user.id
             let matchesSearch = searchText.isEmpty || (report.title ?? "").localizedCaseInsensitiveContains(searchText)
             let matchesOrigin = selectedOriginFilter == "All" || report.uploadedBy == selectedOriginFilter
             
             return belongsToUser && matchesOrigin && matchesSearch
         }
     }
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
-                // MARK: - Premium Warm Light Background Canvas
                 ZStack {
-                    // Base Soft Off-White / Cream
                     Color(red: 0.96, green: 0.95, blue: 0.93)
                         .ignoresSafeArea()
                     
-                    // Top Light Gold Glow
                     RadialGradient(
                         colors: [
                             Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.40),
@@ -65,7 +53,6 @@ struct MedicalReportsDashboard: View {
                     )
                     .ignoresSafeArea()
                     
-                    // Mid Warm Ambient Glow
                     RadialGradient(
                         colors: [
                             Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.30),
@@ -78,10 +65,7 @@ struct MedicalReportsDashboard: View {
                     .ignoresSafeArea()
                 }
                 
-                // MARK: - Original View Layout
                 VStack(spacing: 0) {
-                    
-                    // Search Bar
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
@@ -93,8 +77,7 @@ struct MedicalReportsDashboard: View {
                     .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 3)
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
-
-                    // Segmented Filter
+                    
                     Picker("Filter Source", selection: $selectedOriginFilter) {
                         ForEach(filterOptions, id: \.self) { option in
                             Text(option).tag(option)
@@ -103,8 +86,7 @@ struct MedicalReportsDashboard: View {
                     .pickerStyle(.segmented)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-
-                    // Content Container
+                    
                     if processedReports.isEmpty {
                         ContentUnavailableView(
                             "No Records Found",
@@ -127,7 +109,8 @@ struct MedicalReportsDashboard: View {
                                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                             }
                             .onDelete { offsets in
-                                deleteReportsNodes(at: offsets, from: processedReports)
+                                reportsToDelete = offsets.map { processedReports[$0] }
+                                showDeleteReportConfirmation = true
                             }
                         }
                         .listStyle(.plain)
@@ -148,32 +131,42 @@ struct MedicalReportsDashboard: View {
                 }
             }
             .sheet(isPresented: $isShowingReportUploadSheet) {
-                if let activeUser = currentUser {
-                    UploadReportView(currentUser: activeUser)
-                        .environment(\.managedObjectContext, viewContext)
-                        .environmentObject(user)
-                } else {
-                    ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text("No active user session found"))
+                UploadReportView(currentUser: user)
+                    .environment(\.managedObjectContext, viewContext)
+                    .environmentObject(user)
+            }
+            // MARK: - Explicit Confirmation Alert
+            .alert(
+                "Delete Medical Report",
+                isPresented: $showDeleteReportConfirmation
+            ) {
+                Button("Delete", role: .destructive) {
+                    confirmAndDelete()
                 }
+                Button("Cancel", role: .cancel) {
+                    reportsToDelete.removeAll()
+                }
+            } message: {
+                Text(
+                    reportsToDelete.count > 1
+                    ? "Are you sure you want to delete the selected reports? This action cannot be undone."
+                    : "Are you sure you want to delete this medical report? This action cannot be undone."
+                )
             }
         }
     }
     
-    private func deleteReportsNodes(at offsets: IndexSet, from datasource: [Report]) {
+    private func confirmAndDelete() {
         withAnimation {
-            offsets.map { datasource[$0] }.forEach(viewContext.delete)
-            try? viewContext.save()
+            reportsToDelete.forEach(viewContext.delete)
+            
+            do {
+                try viewContext.save()
+            } catch {
+                print("Error saving deletion: \(error.localizedDescription)")
+            }
+            
+            reportsToDelete.removeAll()
         }
     }
 }
-
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    let request: NSFetchRequest<User> = User.fetchRequest()
-    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
-    
-    return MedicalReportsDashboard()
-        .environment(\.managedObjectContext, context)
-        .environmentObject(sampleUser)
-}
-
