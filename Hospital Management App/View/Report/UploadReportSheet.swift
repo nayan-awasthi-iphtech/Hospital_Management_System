@@ -9,29 +9,15 @@ import SwiftUI
 internal import CoreData
 import UniformTypeIdentifiers
 
-struct UploadReportView: View {
+struct UploadReportSheet: View {
     
     @Environment(\.managedObjectContext) var viewContext
     @Environment(\.dismiss) var dismiss
     
+    @EnvironmentObject private var reportViewModel: ReportViewModel
+    @StateObject private var doctorViewModel = DoctorViewModel()
+    
     let currentUser: User
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Doctor.name, ascending: true)],
-        animation: .default
-    ) private var doctors: FetchedResults<Doctor>
-    
-    @State private var reportTitle: String = ""
-    @State private var reportCategory: String = "Pathology"
-    @State private var reportSource: String = "Patient"
-    @State private var isFilePickerPresented: Bool = false
-    @State private var selectedFileName: String = "No file Chosen"
-    @State private var selectedDoctor: Doctor? = nil
-    @State private var isFileSelected: Bool = false
-    @State private var selectedPDFData: Data? = nil
-    
-    let categories = ["Pathology", "Radiology", "Cardiology", "General Checkup"]
-    let sources = ["Patient", "Hospital"]
     
     var body: some View {
         NavigationStack {
@@ -39,24 +25,24 @@ struct UploadReportView: View {
                 AppBackgroundView()
                 Form {
                     Section(header: Text("Report Details")) {
-                        TextField("Enter the Title (e.g., Blood Test)", text: $reportTitle)
+                        TextField("Enter the Title (e.g., Blood Test)", text: $reportViewModel.reportTitle)
                         
-                        Picker("Category Type", selection: $reportCategory) {
-                            ForEach(categories, id: \.self) { category in
+                        Picker("Category Type", selection: $reportViewModel.reportCategory) {
+                            ForEach(reportViewModel.categories, id: \.self) { category in
                                 Text(category)
                             }
                         }
                     }
                     
                     Section(header: Text("Associated Doctor")) {
-                        if doctors.isEmpty {
+                        if doctorViewModel.doctors.isEmpty {
                             Text("No doctors available")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         } else {
-                            Picker("Select Doctor", selection: $selectedDoctor) {
+                            Picker("Select Doctor", selection: $reportViewModel.selectedDoctor) {
                                 Text("None").tag(Doctor?.none)
-                                ForEach(doctors, id: \.objectID) { doctor in
+                                ForEach(doctorViewModel.doctors, id: \.objectID) { doctor in
                                     Text(doctor.name ?? "Dr. Unknown")
                                         .tag(Optional(doctor))
                                 }
@@ -65,8 +51,8 @@ struct UploadReportView: View {
                     }
                     
                     Section(header: Text("Upload Source")) {
-                        Picker("Uploaded By", selection: $reportSource) {
-                            ForEach(sources, id: \.self) { source in
+                        Picker("Uploaded By", selection: $reportViewModel.reportSource) {
+                            ForEach(reportViewModel.sources, id: \.self) { source in
                                 Text(source)
                             }
                         }
@@ -74,19 +60,19 @@ struct UploadReportView: View {
                     
                     Section(header: Text("Attachment")) {
                         Button(action: {
-                            isFilePickerPresented = true
+                            reportViewModel.isFilePickerPresented = true
                         }) {
                             HStack {
-                                Image(systemName: isFileSelected ? "doc.circle.fill" : "doc.badge.plus")
-                                    .foregroundColor(isFileSelected ? .green : .blue)
+                                Image(systemName: reportViewModel.isFileSelected ? "doc.circle.fill" : "doc.badge.plus")
+                                    .foregroundColor(reportViewModel.isFileSelected ? .green : .blue)
                                     .font(.system(size: 18))
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(isFileSelected ? "File Attached" : "Tap to Choose PDF")
+                                    Text(reportViewModel.isFileSelected ? "File Attached" : "Tap to Choose PDF")
                                         .font(.system(size: 14, weight: .semibold))
                                         .foregroundColor(.primary)
                                     
-                                    Text(selectedFileName)
+                                    Text(reportViewModel.selectedFileName)
                                         .font(.system(size: 12))
                                         .foregroundColor(.secondary)
                                         .lineLimit(1)
@@ -94,7 +80,7 @@ struct UploadReportView: View {
                                 
                                 Spacer()
                                 
-                                if !isFileSelected {
+                                if !reportViewModel.isFileSelected {
                                     Text("Upload")
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundColor(.blue)
@@ -113,26 +99,16 @@ struct UploadReportView: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("Save") {
-                            if let pdfDataBlock = selectedPDFData {
-                                ReportDataManager.saveDynamicReport(
-                                    viewContext: viewContext,
-                                    currentUser: currentUser,
-                                    reportTitle: reportTitle,
-                                    reportCategory: reportCategory,
-                                    reportSource: reportSource,
-                                    selectedDoctor: selectedDoctor,
-                                    selectedPDFData: pdfDataBlock,
-                                ) {
-                                    dismiss()
-                                }
+                            reportViewModel.saveReport(context: viewContext, currentUser: currentUser){_ in
+                                dismiss()
                             }
                         }
                         .font(.system(size: 16, weight: .bold))
-                        .disabled(reportTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !isFileSelected)
+                        .disabled(reportViewModel.reportTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !reportViewModel.isFileSelected)
                     }
                 }
             }
-            .fileImporter(isPresented: $isFilePickerPresented, allowedContentTypes: [.pdf], allowsMultipleSelection: false) { result in
+            .fileImporter(isPresented: $reportViewModel.isFilePickerPresented, allowedContentTypes: [.pdf], allowsMultipleSelection: false) { result in
                 switch result {
                 case .success(let urls):
                     guard let fileURL = urls.first else { return }
@@ -141,9 +117,9 @@ struct UploadReportView: View {
                         defer { fileURL.stopAccessingSecurityScopedResource() }
                         
                         if let data = try? Data(contentsOf: fileURL) {
-                            self.selectedPDFData = data
-                            self.selectedFileName = fileURL.lastPathComponent
-                            self.isFileSelected = true // 💡 Setting selection state flag to true
+                            reportViewModel.selectedPDFData = data
+                            reportViewModel.selectedFileName = fileURL.lastPathComponent
+                            reportViewModel.isFileSelected = true
                         }
                     }
                     
@@ -152,8 +128,8 @@ struct UploadReportView: View {
                 }
             }
             .onAppear {
-                if selectedDoctor == nil && !doctors.isEmpty {
-                    selectedDoctor = doctors.first
+                if reportViewModel.selectedDoctor == nil && !doctorViewModel.doctors.isEmpty {
+                    reportViewModel.selectedDoctor = doctorViewModel.doctors.first
                 }
             }
         }
@@ -169,5 +145,5 @@ struct UploadReportView: View {
         user.email = "preview@example.com"
         return user
     }()
-    return UploadReportView(currentUser: previewUser)
+    return UploadReportSheet(currentUser: previewUser)
 }

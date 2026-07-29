@@ -89,7 +89,7 @@ struct HealthInfoCard: View {
             RoundedRectangle(cornerRadius: 24)
                 .fill(
                     LinearGradient(
-                        colors: [Color.gray.opacity(1.5), Color.brown.opacity(1.2)],
+                        colors: [Color.gray.opacity(0.6), Color.brown.opacity(0.9)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )

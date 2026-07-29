@@ -3,11 +3,7 @@ internal import CoreData
 
 struct AppointmentBookingHistory: View {
     @Environment(\.managedObjectContext) var viewContext
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: false)],
-        animation: .default
-    ) private var appointments: FetchedResults<Appointment>
+    @StateObject private var viewModel = AppointmentViewModel()
     
     @State private var selectedTab = 0
     @State private var appointemntToReschedule: Appointment? = nil
@@ -16,6 +12,10 @@ struct AppointmentBookingHistory: View {
     
     private var currentUser: User? {
         PersistenceController.shared.currentUser
+    }
+    
+    private var currentList: [Appointment] {
+        selectedTab == 0 ? viewModel.UpcomingAppointment: viewModel.passedAppointment
     }
     
     var body: some View {
@@ -35,7 +35,7 @@ struct AppointmentBookingHistory: View {
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 16)
                 
-                if filteredAppointments(for: currentUser).isEmpty {
+                if currentList.isEmpty {
                     Spacer()
                     ContentUnavailableView(
                         "No Appointments",
@@ -46,94 +46,54 @@ struct AppointmentBookingHistory: View {
                     Spacer()
                 } else {
                     List {
-                        ForEach(filteredAppointments(for: currentUser)) { app in
+                        ForEach(currentList) { app in
                             AppointmentCardView(
                                 appointment: app,
-                                onCancel: { cancelAppointment(app) },
+                                onCancel: {
+                                    withAnimation{
+                                        viewModel.cancelAppointment(app)
+                                    }
+                                },
                                 onReschedule: {
-                                    appointemntToReschedule = app
+                                    viewModel.appointemntToReschedule  = app
                                 }
                             )
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
-                        .onDelete(perform: { offsets in
-                            ApptToDelete = offsets.map {filteredAppointments(for: currentUser) [$0]}
-                            showConfirmDeleteAppt = true
-                        })
+                        .onDelete{offsets in
+                            viewModel.prepareForDelete(at: offsets, from: currentList)
+                        }
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                 }
             }
         }
-        .sheet(item: $appointemntToReschedule) { targetAppointment in
+        .onAppear {
+            viewModel.fetchAppointments()
+        }
+        .sheet(item: $viewModel.appointemntToReschedule) { targetAppointment in
             RescheduleSheetView(
                 appointment: targetAppointment,
                 onDismiss: {
-                    self.appointemntToReschedule = nil
+                    viewModel.appointemntToReschedule = nil
+                    viewModel.fetchAppointments()
                 }
             )
         }
-        .alert("Delete Appointment", isPresented: $showConfirmDeleteAppt) {
+        .alert("Delete Appointment", isPresented: $viewModel.showConfirmDeleteAppt) {
             Button("Delete", role: .destructive) {
-                deleteAppointmentItems()
+                viewModel.deleteSelectedAppoitments()
             }
             Button("Cancel", role: .cancel) {
-                ApptToDelete.removeAll()
+                viewModel.ApptToDelete.removeAll()
             }
         } message: {
             Text(
-                ApptToDelete.count > 1 ? "Are you sure you want to delete the selected appointments? This action cannot be undone." : "Are you sure you want to delete the selected appointment? This action cannot be undone."
+                viewModel.ApptToDelete.count > 1 ? "Are you sure you want to delete the selected appointments? This action cannot be undone." : "Are you sure you want to delete the selected appointment? This action cannot be undone."
             )
-        }
-    }
-    
-    private func filteredAppointments(for user: User?) -> [Appointment] {
-        guard let currentUser = user else { return [] }
-        
-        let userAppointments = appointments.filter { $0.appointment_user == currentUser }
-        
-        if selectedTab == 0 {
-            return userAppointments.filter { app in
-                let status = app.status ?? ""
-                return status.localizedCaseInsensitiveContains("Scheduled") || status.isEmpty
-            }
-        } else {
-            return userAppointments.filter { app in
-                let status = app.status ?? ""
-                return status.localizedCaseInsensitiveContains("Cancelled") ||
-                status.localizedCaseInsensitiveContains("Completed") ||
-                status.localizedCaseInsensitiveContains("Canceled")
-            }
-        }
-    }
-    
-    private func cancelAppointment(_ app: Appointment) {
-        withAnimation {
-            app.status = "Cancelled"
-            
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error cancelling appointment: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    private func deleteAppointmentItems() {
-        
-        withAnimation {
-            ApptToDelete.forEach(viewContext.delete)
-            
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error deleting appointment: \(error.localizedDescription)")
-            }
-            
-            ApptToDelete.removeAll()
         }
     }
 }

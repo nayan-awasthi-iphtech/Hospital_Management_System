@@ -18,7 +18,7 @@ class DoctorViewModel: ObservableObject {
     @Published var isShowingSheet: Bool = false
     
     @Published var editname: String = ""
-    @Published var editExperience: Int16 = 0
+    @Published var editExperience: Int16? = nil
     @Published var editQualification: String = ""
     @Published var editAbout: String = ""
     @Published var editDepartment: String = ""
@@ -61,7 +61,7 @@ class DoctorViewModel: ObservableObject {
     func addnewDoctorFields(){
         self.selectedDoctor = nil
         self.editname = ""
-        self.editExperience = 0
+        self.editExperience = editExperience
         self.editQualification = ""
         self.editAbout = ""
         self.editDepartment = ""
@@ -72,8 +72,11 @@ class DoctorViewModel: ObservableObject {
         let trimmedName = editname.trimmingCharacters(in: .whitespaces)
         let trimmedQualification = editQualification.trimmingCharacters(in: .whitespaces)
         let trimmedAbout = editAbout.trimmingCharacters(in: .whitespaces)
-        let department = editDepartment.trimmingCharacters(in: .whitespaces).isEmpty
-        return !trimmedName.isEmpty || !trimmedQualification.isEmpty || !trimmedAbout.isEmpty || !department
+        let trimmedDepartment = editDepartment.trimmingCharacters(in: .whitespaces)
+        return !trimmedName.isEmpty &&
+               !trimmedQualification.isEmpty &&
+               !trimmedAbout.isEmpty &&
+               !trimmedDepartment.isEmpty
     }
     
     func saveChanges() -> Bool {
@@ -85,7 +88,7 @@ class DoctorViewModel: ObservableObject {
         let doctorToSave = selectedDoctor ?? Doctor(context: context)
         
         doctorToSave.name = editname
-        doctorToSave.experienceYears = editExperience
+        doctorToSave.experienceYears = editExperience ?? 0
         doctorToSave.qualification = editQualification
         doctorToSave.about = editAbout
         doctorToSave.department = editDepartment

@@ -39,13 +39,20 @@ struct UpcomingAppointmentCard: View {
                     
                     HStack(alignment: .center, spacing: 12) {
                         
-                        Image(systemName: "person.crop.circle.badge.checkmark.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 44, height: 44)
-                            .foregroundColor(.blue)
-                            .padding(8)
-                            .background(Circle().fill(Color.blue.opacity(0.1)))
+                        if let imageData = appt.appointment_doctor?.imageData,
+                            let uiImage = UIImage(data: imageData){
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 60, height: 60)
+                                    .foregroundColor(.gray)
+                            }
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text(appt.appointment_doctor?.name ?? "Dr. Unknown Doctor")
@@ -79,7 +86,7 @@ struct UpcomingAppointmentCard: View {
                             Image(systemName: "calendar")
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
-                            Text(formatDate((appointment?.date)!))
+                            Text(formatDate((appt.date)!))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

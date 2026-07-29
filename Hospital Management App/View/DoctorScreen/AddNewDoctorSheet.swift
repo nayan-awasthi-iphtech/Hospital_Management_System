@@ -155,7 +155,7 @@ struct AddDoctorSheetView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.secondary)
                                 
-                                TextField("e.g. 8", value: $doctorViewModel.editExperience, format: .number.grouping(.never))
+                                TextField("e.g. 8", value: $doctorViewModel.editExperience, format: .number)
                                     .keyboardType(.numberPad)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 12)

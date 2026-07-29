@@ -44,6 +44,7 @@ struct UserInformationCardView: View {
                 InfoRow(icon: "figure.arms.open", label: "Gender", value: user.gender ?? "Male")
                 Divider().opacity(0.3)
                 InfoRow(icon: "bandage.fill", label: "Allergies", value: user.allergies ?? "None")
+                InfoRow(icon: "phone.fill", label: "Contact", value: String(user.emergencyContact))
             }
         }
         .padding(16)

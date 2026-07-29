@@ -4,35 +4,19 @@ internal import CoreData
 struct MedicalReportsDashboard: View {
     
     @Environment(\.managedObjectContext) var viewContext
-    @EnvironmentObject var user: User
+    @EnvironmentObject var currentUser: User
+    
+    @StateObject private var viewModel = ReportViewModel()
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Report.date, ascending: false)],
         animation: .default
     ) private var allReports: FetchedResults<Report>
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Doctor.name, ascending: true)],
-        animation: .default
-    ) private var doctors: FetchedResults<Doctor>
-    
-    @State private var searchText: String = ""
-    @State private var selectedOriginFilter: String = "All"
+
     @State private var isShowingReportUploadSheet: Bool = false
     
-    @State private var reportsToDelete: [Report] = []
-    @State private var showDeleteReportConfirmation: Bool = false
-    
-    let filterOptions = ["All", "Patient", "Hospital"]
-    
     private var processedReports: [Report] {
-        allReports.filter { report in
-            let belongsToUser = report.report_user?.id == user.id
-            let matchesSearch = searchText.isEmpty || (report.title ?? "").localizedCaseInsensitiveContains(searchText)
-            let matchesOrigin = selectedOriginFilter == "All" || report.uploadedBy == selectedOriginFilter
-            
-            return belongsToUser && matchesOrigin && matchesSearch
-        }
+        viewModel.filterReports(from: allReports, currentUser: currentUser)
     }
     
     var body: some View {
@@ -43,7 +27,7 @@ struct MedicalReportsDashboard: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
-                        TextField("Search by report title...", text: $searchText)
+                        TextField("Search by report title...", text: $viewModel.searchText)
                     }
                     .padding(12)
                     .background(Color(.systemBackground))
@@ -52,8 +36,8 @@ struct MedicalReportsDashboard: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
                     
-                    Picker("Filter Source", selection: $selectedOriginFilter) {
-                        ForEach(filterOptions, id: \.self) { option in
+                    Picker("Filter Source", selection: $viewModel.selectedOriginFilter) {
+                        ForEach(viewModel.filterOptions, id: \.self) { option in
                             Text(option).tag(option)
                         }
                     }
@@ -73,18 +57,17 @@ struct MedicalReportsDashboard: View {
                         List {
                             ForEach(processedReports) { report in
                                 NavigationLink(destination: PdfViewer(pdfData: report.fileData ?? Data())
-                                    .environmentObject(user)
+                                    .environmentObject(currentUser)
                                 ) {
                                     DynamicReportRowCard(report: report)
-                                        .environmentObject(user)
+                                        .environmentObject(currentUser)
                                 }
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                             }
                             .onDelete { offsets in
-                                reportsToDelete = offsets.map { processedReports[$0] }
-                                showDeleteReportConfirmation = true
+                                viewModel.prepareForDelete(at: offsets, from: processedReports)
                             }
                         }
                         .listStyle(.plain)
@@ -105,42 +88,28 @@ struct MedicalReportsDashboard: View {
                 }
             }
             .sheet(isPresented: $isShowingReportUploadSheet) {
-                UploadReportView(currentUser: user)
+                UploadReportSheet(currentUser: currentUser)
                     .environment(\.managedObjectContext, viewContext)
-                    .environmentObject(user)
+                    .environmentObject(currentUser)
+                    .environmentObject(viewModel)
             }
-            // MARK: - Explicit Confirmation Alert
             .alert(
                 "Delete Medical Report",
-                isPresented: $showDeleteReportConfirmation
+                isPresented: $viewModel.showDeleteConfirmation
             ) {
                 Button("Delete", role: .destructive) {
-                    confirmAndDelete()
+                    viewModel.confirmAndDelete(context: viewContext)
                 }
                 Button("Cancel", role: .cancel) {
-                    reportsToDelete.removeAll()
+                    viewModel.reportTitle.removeAll()
                 }
             } message: {
                 Text(
-                    reportsToDelete.count > 1
+                    viewModel.reportsToDelete.count > 1
                     ? "Are you sure you want to delete the selected reports? This action cannot be undone."
                     : "Are you sure you want to delete this medical report? This action cannot be undone."
                 )
             }
-        }
-    }
-    
-    private func confirmAndDelete() {
-        withAnimation {
-            reportsToDelete.forEach(viewContext.delete)
-            
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error saving deletion: \(error.localizedDescription)")
-            }
-            
-            reportsToDelete.removeAll()
         }
     }
 }

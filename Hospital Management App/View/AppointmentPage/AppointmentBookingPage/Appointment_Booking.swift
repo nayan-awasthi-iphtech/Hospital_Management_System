@@ -11,6 +11,7 @@ internal import CoreData
 struct Appointment_Booking: View {
     
     @Environment(\.managedObjectContext) var viewContext
+    @StateObject private var viewModel = AppointmentViewModel()
     @Environment(\.dismiss) var dismiss
     
     @ObservedObject var doctor: Doctor
@@ -28,12 +29,12 @@ struct Appointment_Booking: View {
             Color(.systemGroupedBackground)
                 .ignoresSafeArea()
             
-            if isBookingSuccess {
+            if viewModel.isBookingSuccess   {
                 BookingSuccessView(
                     doctor: doctor,
-                    selectedDate: selectedDate,
-                    selectedTimeSlot: selectedTimeSlot,
-                    isAnimated: isBookingSuccess,
+                    selectedDate: viewModel.selectedDate,
+                    selectedTimeSlot: viewModel.selectedTimeSlot,
+                    isAnimated: viewModel.isBookingSuccess,
                     navTap: {
                         selectedTab = 1
                     }
@@ -50,7 +51,7 @@ struct Appointment_Booking: View {
                                 Text("Select Date")
                                     .font(.headline)
                                 
-                                DatePicker("Choose Date", selection: $selectedDate, in: Date()..., displayedComponents: .date)
+                                DatePicker("Choose Date", selection: $viewModel.selectedDate, in: Date()..., displayedComponents: .date)
                                     .datePickerStyle(.graphical)
                                     .padding()
                                     .background(Color(.systemBackground))
@@ -66,14 +67,14 @@ struct Appointment_Booking: View {
                                         Text(slot)
                                             .font(.subheadline)
                                             .fontWeight(.semibold)
-                                            .foregroundColor(selectedTimeSlot == slot ? .white : .primary)
+                                            .foregroundColor(viewModel.selectedTimeSlot == slot ? .white : .primary)
                                             .frame(maxWidth: .infinity)
                                             .frame(height: 45)
-                                            .background(selectedTimeSlot == slot ? Color.blue : Color(.systemBackground))
+                                            .background(viewModel.selectedTimeSlot == slot ? Color.blue : Color(.systemBackground))
                                             .cornerRadius(12)
                                             .shadow(color: Color.black.opacity(0.01), radius: 3)
                                             .onTapGesture {
-                                                selectedTimeSlot = slot
+                                                viewModel.selectedTimeSlot = slot
                                             }
                                     }
                                 }
@@ -82,82 +83,28 @@ struct Appointment_Booking: View {
                         .padding(20)
                     }
                     
-                    Button(action: executeBookingTransaction) {
+                    Button(action:{
+                        viewModel.bookAppointment(doctor: doctor, currentUser: currentUser)
+                    }) {
                         Text("Confirm Appointment")
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(selectedTimeSlot.isEmpty ? Color.gray : Color.blue)
+                            .background(viewModel.selectedTimeSlot.isEmpty ? Color.gray : Color.blue)
                             .cornerRadius(16)
-                            .shadow(color: selectedTimeSlot.isEmpty ? Color.clear : Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                            .shadow(color: viewModel.selectedTimeSlot.isEmpty ? Color.clear : Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
-                    .disabled(selectedTimeSlot.isEmpty)
+                    .disabled(viewModel.selectedTimeSlot.isEmpty)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 16)
                 }
             }
         }
-        .navigationTitle(isBookingSuccess ? "" : "Book Appointment")
+        .navigationTitle(viewModel.isBookingSuccess ? "" : "Book Appointment")
         .navigationBarTitleDisplayMode(.inline)
     }
-    
-    private func executeBookingTransaction() {
-        let appointmentID = UUID()
-        let appointment = Appointment(context: viewContext)
-        appointment.id = appointmentID
-        appointment.date = selectedDate
-        appointment.status = "Scheduled"
-        appointment.timeSlot = selectedTimeSlot
-        appointment.appointment_doctor = doctor
-        appointment.appointment_user = currentUser
-        
-        do {
-            try viewContext.save()
-
-            
-            if let bookedUser = appointment.appointment_user {
-                    print("✅ Appointment successfully saved!")
-                    print("👉 Doctor Name: \(appointment.appointment_doctor?.name ?? "Unknown Doctor")")
-                    print("👉 Patient/User Name: \(bookedUser.name ?? "Unknown User")")
-                    print("👉 User ID: \(bookedUser.id?.uuidString ?? "No ID")")
-                }
-            
-            if let exactAppointmentDate = combine(date: selectedDate, timeSlotString: selectedTimeSlot){
-                NotificationManager.shared.ScheduleNotification(
-                    id: appointmentID.uuidString,
-                    title: "Upcoming Appointment 📅",
-                    body: "Reminder: You have an appointment booked with \(doctor.name ?? "your doctor") soon.",
-                    targetDate: exactAppointmentDate,
-                    minutesBefore: 0
-                )
-                NotificationManager.shared.sendInstantNotification(id: appointmentID.uuidString, title: "Upcoming Appointment 📅", body: "Reminder: You have an appointment booked with \(doctor.name ?? "your doctor") soon.")
-            }
-            
-            withAnimation(.easeInOut(duration: 0.4)) {
-                isBookingSuccess = true
-            }
-        } catch {
-            print("Fatal Database Write Failure: \(error.localizedDescription)")
-        }
-    }
-    
-    private func combine(date: Date, timeSlotString: String) -> Date? {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "hh:mm a" 
-            
-            guard let timeDate = formatter.date(from: timeSlotString) else { return nil }
-            
-            let calendar = Calendar.current
-            var dateComponents = calendar.dateComponents([.year, .month, .day], from: date)
-            let timeComponents = calendar.dateComponents([.hour, .minute], from: timeDate)
-            
-            dateComponents.hour = timeComponents.hour
-            dateComponents.minute = timeComponents.minute
-            
-            return calendar.date(from: dateComponents)
-        }
 }
 
 //#Preview {
