@@ -6,6 +6,8 @@ struct HomeScreen: View {
     @Environment(\.managedObjectContext) var viewContext
     @Binding var selectedTab: Int
     
+    @State private var showNotificationsSheet: Bool = false
+    
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: true)],
         animation: .default
@@ -15,10 +17,8 @@ struct HomeScreen: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
         animation: .default
     ) private var medicines: FetchedResults<Medicine>
-
-    private var currentUser: User? {
-        PersistenceController.shared.currentUser
-    }
+    
+    @ObservedObject var currentUser: User
     
     private var upcomingUserAppointment: [Appointment] {
         let now = Date()
@@ -30,39 +30,20 @@ struct HomeScreen: View {
         }
     }
     
+    private var hasUpcomingAppointment: Bool {
+        appointments.contains { appointment in
+            appointment.appointment_user == currentUser &&
+            appointment.status?.lowercased() == "scheduled"
+        }
+    }
+    
     var body: some View {
         let userAppointments = appointments.filter { $0.appointment_user == currentUser }
         let userMedicines = medicines.filter { $0.medicine_user == currentUser }
         
         NavigationStack {
             ZStack {
-                ZStack {
-                    Color(red: 0.96, green: 0.95, blue: 0.93)
-                        .ignoresSafeArea()
-                    
-                    RadialGradient(
-                        colors: [
-                            Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.45),
-                            Color.clear
-                        ],
-                        center: .topLeading,
-                        startRadius: 20,
-                        endRadius: 400
-                    )
-                    .ignoresSafeArea()
-                    
-                    RadialGradient(
-                        colors: [
-                            Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.35),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 50,
-                        endRadius: 500
-                    )
-                    .ignoresSafeArea()
-                }
-                
+                AppBackgroundView()
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         HStack(alignment: .center) {
@@ -72,7 +53,7 @@ struct HomeScreen: View {
                                     .fontWeight(.medium)
                                     .foregroundStyle(.white.opacity(0.9))
                                 
-                                Text(currentUser?.name ?? "User")
+                                Text(currentUser.name ?? "User")
                                     .font(.title2)
                                     .bold()
                                     .foregroundStyle(.white)
@@ -80,24 +61,30 @@ struct HomeScreen: View {
                             
                             Spacer()
                             
-                            ZStack(alignment: .topTrailing) {
-                                Image(systemName: "bell.fill")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(Color(red: 0.45, green: 0.32, blue: 0.22))
-                                    .padding(12)
-                                    .background(
+                            Button(action: {
+                                showNotificationsSheet = true
+                            }) {
+                                ZStack(alignment: .topTrailing) {
+                                    Image(systemName: "bell.fill")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(Color(red: 0.45, green: 0.32, blue: 0.22))
+                                        .padding(12)
+                                        .background(
+                                            Circle()
+                                                .fill(.white)
+                                                .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+                                        )
+                                    
+                                    if hasUpcomingAppointment {
                                         Circle()
-                                            .fill(.white)
-                                            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
-                                    )
-                                
-                                Circle()
-                                    .fill(Color.red)
-                                    .frame(width: 10, height: 10)
-                                    .overlay(
-                                        Circle().stroke(Color.white, lineWidth: 2)
-                                    )
-                                    .offset(x: -1, y: 1)
+                                            .fill(Color.red)
+                                            .frame(width: 10, height: 10)
+                                            .overlay(
+                                                Circle().stroke(Color.white, lineWidth: 2)
+                                            )
+                                            .offset(x: -1, y: 1)
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -138,7 +125,7 @@ struct HomeScreen: View {
                         MetricCountersRow(
                             appointmentCount: userAppointments.count,
                             prescriptionCount: userMedicines.count,
-                            reportCount: currentUser?.user_report?.count ?? 0
+                            reportCount: currentUser.user_report?.count ?? 0
                         )
                         
                         UpcomingAppointmentCard(appointment: upcomingUserAppointment.first, selectedTab: $selectedTab)
@@ -147,6 +134,11 @@ struct HomeScreen: View {
                     }
                     .padding(.bottom, 24)
                 }
+            }
+            .sheet(isPresented: $showNotificationsSheet) {
+                NotificationsSheet(currentUser: currentUser, selectedTab: $selectedTab)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
         .navigationBarHidden(true)

@@ -10,7 +10,7 @@ internal import CoreData
 
 struct UserInformationCardView: View {
     
-    let user: User
+    @ObservedObject var user: User
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

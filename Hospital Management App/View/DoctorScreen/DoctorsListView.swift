@@ -5,6 +5,9 @@ struct DoctorsListView: View {
     
     @Environment(\.managedObjectContext) var viewContext
     
+    @EnvironmentObject var doctorViewModel: DoctorViewModel
+    @EnvironmentObject var userViewModel: UserViewModel
+    
     @State private var searchText: String = ""
     @State private var selectedCategory: String = "All"
     
@@ -14,33 +17,28 @@ struct DoctorsListView: View {
     @State private var showDeleteAlert: Bool = false
     
     @Binding var selectedTab: Int
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Doctor.name, ascending: true)],
-        animation: .default)
-    var doctors: FetchedResults<Doctor>
-    
+        
     private var currentUser: User? {
-        PersistenceController.shared.currentUser
+        userViewModel.currentUser
     }
     
     var uniqueCategories: [String] {
-        let departments = Set(doctors.compactMap { doctor in doctor.department })
+        let departments = Set(doctorViewModel.doctors.compactMap { doctor in doctor.department })
         return ["All"] + departments.sorted()
     }
     
     var filteredDoctors: [Doctor] {
         if searchText.isEmpty && selectedCategory == "All" {
-            return Array(doctors)
+            return Array(doctorViewModel.doctors)
         }
         
         if searchText.isEmpty && selectedCategory != "All" {
-            return doctors.filter { doctor in
+            return doctorViewModel.doctors.filter { doctor in
                 doctor.department?.localizedCaseInsensitiveContains(selectedCategory) ?? false
             }
         }
         
-        return doctors.filter { doctor in
+        return doctorViewModel.doctors.filter { doctor in
             let matchesCategory = selectedCategory == "All" || (doctor.department?.localizedCaseInsensitiveContains(selectedCategory) ?? false)
             
             let matchesSearch = doctor.name?.localizedCaseInsensitiveContains(searchText) ?? false ||
@@ -53,42 +51,15 @@ struct DoctorsListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background Layer
-                Color(red: 0.96, green: 0.95, blue: 0.93)
-                    .ignoresSafeArea()
+                AppBackgroundView()
                 
-                RadialGradient(
-                    colors: [
-                        Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.40),
-                        Color.clear
-                    ],
-                    center: .topLeading,
-                    startRadius: 20,
-                    endRadius: 400
-                )
-                .ignoresSafeArea()
-                
-                RadialGradient(
-                    colors: [
-                        Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.30),
-                        Color.clear
-                    ],
-                    center: .center,
-                    startRadius: 50,
-                    endRadius: 500
-                )
-                .ignoresSafeArea()
-                
-                // Content Layout
                 VStack(spacing: 0) {
-                    
-                    // Specialty Category Picker section
+
                     SpecialtyFilterView(selectedCategory: $selectedCategory, categories: uniqueCategories)
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                         .listRowSeparator(.hidden)
                     
-                    // Main Doctors List
                     List {
                         if !filteredDoctors.isEmpty {
                             Section {
@@ -97,6 +68,8 @@ struct DoctorsListView: View {
                                         if let user = currentUser {
                                             NavigationLink(destination: DoctorDetailScreen(doctor: doctor, user: user, selectedTab: $selectedTab)) {
                                                 DoctorRowCard(doctor: doctor)
+                                                    .listRowBackground(Color.clear) 
+                                                    .listRowSeparator(.hidden)
                                             }
                                             .buttonStyle(PlainButtonStyle())
                                         } else {
@@ -142,6 +115,7 @@ struct DoctorsListView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
+                        doctorViewModel.addnewDoctorFields()
                         showAddDoctorSheet = true
                     }) {
                         Image(systemName: "plus.circle.fill")
@@ -172,14 +146,8 @@ struct DoctorsListView: View {
         }
     }
     
-    private func deleteDoctor(_ doctor: Doctor) {
-        let doctorName = doctor.name ?? "Doctor"
-        viewContext.delete(doctor)
-        do {
-            try viewContext.save()
-            print("Data deleted successfully for \(doctorName)")
-        } catch {
-            print("Error while deleting the doctor: \(error.localizedDescription)")
-        }
+    private func deleteDoctor(_ doctor: Doctor){
+        doctorViewModel.deleteDoctor(doctor)
+        doctorToDelete = nil
     }
 }

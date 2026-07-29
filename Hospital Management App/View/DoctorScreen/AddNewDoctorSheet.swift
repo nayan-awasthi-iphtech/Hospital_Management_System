@@ -10,15 +10,17 @@ import PhotosUI
 internal import CoreData
 
 struct AddDoctorSheetView: View {
-    @Environment(\.managedObjectContext) var viewContext
+    
+    @EnvironmentObject var doctorViewModel: DoctorViewModel
+    @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
     // MARK: - Form States (UI Inputs)
-    @State private var doctorName: String = ""
-    @State private var selectedDepartment: String = "General Medicine"
-    @State private var yearsOfExperience: Int16? = nil
-    @State private var doctorBio: String = ""
-    @State private var qualification : String = ""
+    //    @State private var doctorName: String = ""
+    //    @State private var selectedDepartment: String = "General Medicine"
+    //    @State private var yearsOfExperience: Int16? = nil
+    //    @State private var doctorBio: String = ""
+    //    @State private var qualification : String = ""
     
     // Photo Picker States
     @State private var selectedItem: PhotosPickerItem? = nil
@@ -39,46 +41,14 @@ struct AddDoctorSheetView: View {
         "Psychiatry"
     ]
     
-    private var isFormValid: Bool{
-        !doctorName.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !selectedDepartment.trimmingCharacters(in: .whitespaces).isEmpty
-    }
-    
     var body: some View {
         NavigationStack {
             ZStack {
-                // MARK: - Background Setup (Matching App Theme)
-                ZStack {
-                    Color(red: 0.96, green: 0.95, blue: 0.93)
-                        .ignoresSafeArea()
-                    
-                    RadialGradient(
-                        colors: [
-                            Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.40),
-                            Color.clear
-                        ],
-                        center: .topLeading,
-                        startRadius: 20,
-                        endRadius: 400
-                    )
-                    .ignoresSafeArea()
-                    
-                    RadialGradient(
-                        colors: [
-                            Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.30),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 50,
-                        endRadius: 500
-                    )
-                    .ignoresSafeArea()
-                }
+                AppBackgroundView()
                 
                 ScrollView {
                     VStack(spacing: 20) {
                         
-                        // MARK: - Image Selector Card
                         VStack(spacing: 12) {
                             PhotosPicker(selection: $selectedItem, matching: .images) {
                                 ZStack(alignment: .bottomTrailing) {
@@ -117,7 +87,7 @@ struct AddDoctorSheetView: View {
                                 Task {
                                     if let data = try? await newItem?.loadTransferable(type: Data.self),
                                        let uiImage = UIImage(data: data) {
-                                        self.selectedImageData = data
+                                        self.doctorViewModel.editImageData = data
                                         self.selectedUIImage = uiImage
                                     }
                                 }
@@ -134,7 +104,6 @@ struct AddDoctorSheetView: View {
                         .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
                         .padding(.horizontal, 20)
                         
-                        // MARK: - Information Form Fields
                         VStack(alignment: .leading, spacing: 16) {
                             
                             // Full Name
@@ -144,7 +113,7 @@ struct AddDoctorSheetView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.secondary)
                                 
-                                TextField("e.g. Dr. Sarah Jenkins", text: $doctorName)
+                                TextField("e.g. Dr. Sarah Jenkins", text: $doctorViewModel.editname)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 12)
                                     .background(Color(.secondarySystemBackground))
@@ -161,12 +130,12 @@ struct AddDoctorSheetView: View {
                                 Menu {
                                     ForEach(departments, id: \.self) { dept in
                                         Button(dept) {
-                                            selectedDepartment = dept
+                                            doctorViewModel.editDepartment = dept.trimmingCharacters(in: .whitespacesAndNewlines)
                                         }
                                     }
                                 } label: {
                                     HStack {
-                                        Text(selectedDepartment)
+                                        Text(doctorViewModel.editDepartment.isEmpty ? "Select Department" : doctorViewModel.editDepartment)
                                             .foregroundColor(.primary)
                                         Spacer()
                                         Image(systemName: "chevron.up.chevron.down")
@@ -180,14 +149,13 @@ struct AddDoctorSheetView: View {
                                 }
                             }
                             
-                            // Experience
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Experience (Years)")
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .foregroundColor(.secondary)
                                 
-                                TextField("e.g. 8", value: $yearsOfExperience, format: .number)
+                                TextField("e.g. 8", value: $doctorViewModel.editExperience, format: .number.grouping(.never))
                                     .keyboardType(.numberPad)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 12)
@@ -201,21 +169,21 @@ struct AddDoctorSheetView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.secondary)
                                 
-                                TextField("B.Pharma", text: $qualification)
+                                TextField("B.Pharma", text: $doctorViewModel.editQualification)
                                     .padding(.horizontal, 14)
                                     .padding(.vertical, 12)
                                     .background(Color(.secondarySystemBackground))
                                     .cornerRadius(12)
                             }
                             
-                            // About / Bio
+                            
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("About Doctor")
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .foregroundColor(.secondary)
                                 
-                                TextEditor(text: $doctorBio)
+                                TextEditor(text: $doctorViewModel.editAbout)
                                     .frame(height: 90)
                                     .padding(6)
                                     .background(Color(.secondarySystemBackground))
@@ -228,10 +196,10 @@ struct AddDoctorSheetView: View {
                         .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
                         .padding(.horizontal, 20)
                         
-                        // Save Button inside sheet
                         Button(action: {
-                            SaveDoctor()
-                            dismiss()
+                            if doctorViewModel.saveChanges(){
+                                dismiss()
+                            }
                         }) {
                             Text("Save Doctor")
                                 .font(.headline)
@@ -245,7 +213,7 @@ struct AddDoctorSheetView: View {
                         }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 20)
-                        .disabled(!isFormValid)
+                        .disabled(!doctorViewModel.isformValid)
                     }
                     .padding(.top, 16)
                 }
@@ -255,6 +223,7 @@ struct AddDoctorSheetView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
+                        doctorViewModel.cancelEdits()
                         dismiss()
                     }
                     .foregroundColor(.secondary)
@@ -263,28 +232,8 @@ struct AddDoctorSheetView: View {
         }
     }
     
-    private func SaveDoctor() {
-        let newDoctor = Doctor(context: viewContext)
-        newDoctor.name = doctorName
-        newDoctor.department = selectedDepartment
-        newDoctor.qualification = qualification.isEmpty ? nil : qualification
-        newDoctor.imageData = selectedImageData
-        newDoctor.about =  doctorBio
-        newDoctor.experienceYears = yearsOfExperience ?? 0
-        
-        do {
-            try viewContext.save()
-            print("data saved successfuly")
-        } catch {
-            viewContext.delete(newDoctor)
-            print("Error while saving \(error.localizedDescription)")
-            errorMesage = error.localizedDescription
-            showerrorMessage = true
-        }
-    }
 }
 
-// MARK: - SwiftUI Preview
 #Preview("Add Doctor Sheet") {
     AddDoctorSheetView()
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)

@@ -31,8 +31,7 @@ struct MedicineDetailView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.96, green: 0.95, blue: 0.93)
-                .ignoresSafeArea()
+             AppBackgroundView()
             
             ScrollView(showsIndicators: false) {
                 

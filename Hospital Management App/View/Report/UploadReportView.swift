@@ -24,7 +24,6 @@ struct UploadReportView: View {
     @State private var reportTitle: String = ""
     @State private var reportCategory: String = "Pathology"
     @State private var reportSource: String = "Patient"
-    //    @State private var reportToDoctor: String = "Dr. Alex John"
     @State private var isFilePickerPresented: Bool = false
     @State private var selectedFileName: String = "No file Chosen"
     @State private var selectedDoctor: Doctor? = nil
@@ -36,123 +35,126 @@ struct UploadReportView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section(header: Text("Report Details")) {
-                    TextField("Enter the Title (e.g., Blood Test)", text: $reportTitle)
-                    
-                    Picker("Category Type", selection: $reportCategory) {
-                        ForEach(categories, id: \.self) { category in
-                            Text(category)
-                        }
-                    }
-                }
-                
-                Section(header: Text("Associated Doctor")) {
-                    if doctors.isEmpty {
-                        Text("No doctors available")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else {
-                        Picker("Select Doctor", selection: $selectedDoctor) {
-                            Text("None").tag(Doctor?.none)
-                            ForEach(doctors, id: \.objectID) { doctor in
-                                Text(doctor.name ?? "Dr. Unknown")
-                                    .tag(Optional(doctor))
+            ZStack{
+                AppBackgroundView()
+                Form {
+                    Section(header: Text("Report Details")) {
+                        TextField("Enter the Title (e.g., Blood Test)", text: $reportTitle)
+                        
+                        Picker("Category Type", selection: $reportCategory) {
+                            ForEach(categories, id: \.self) { category in
+                                Text(category)
                             }
                         }
                     }
-                }
-                
-                Section(header: Text("Upload Source")) {
-                    Picker("Uploaded By", selection: $reportSource) {
-                        ForEach(sources, id: \.self) { source in
-                            Text(source)
+                    
+                    Section(header: Text("Associated Doctor")) {
+                        if doctors.isEmpty {
+                            Text("No doctors available")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Picker("Select Doctor", selection: $selectedDoctor) {
+                                Text("None").tag(Doctor?.none)
+                                ForEach(doctors, id: \.objectID) { doctor in
+                                    Text(doctor.name ?? "Dr. Unknown")
+                                        .tag(Optional(doctor))
+                                }
+                            }
                         }
                     }
-                }
-                
-                Section(header: Text("Attachment")) {
-                    Button(action: {
-                        isFilePickerPresented = true
-                    }) {
-                        HStack {
-                            // 💡 Visual Fix: Green indicator toggles ONLY when a file is successfully selected
-                            Image(systemName: isFileSelected ? "doc.circle.fill" : "doc.badge.plus")
-                                .foregroundColor(isFileSelected ? .green : .blue)
-                                .font(.system(size: 18))
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(isFileSelected ? "File Attached" : "Tap to Choose PDF")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.primary)
+                    
+                    Section(header: Text("Upload Source")) {
+                        Picker("Uploaded By", selection: $reportSource) {
+                            ForEach(sources, id: \.self) { source in
+                                Text(source)
+                            }
+                        }
+                    }
+                    
+                    Section(header: Text("Attachment")) {
+                        Button(action: {
+                            isFilePickerPresented = true
+                        }) {
+                            HStack {
+                                Image(systemName: isFileSelected ? "doc.circle.fill" : "doc.badge.plus")
+                                    .foregroundColor(isFileSelected ? .green : .blue)
+                                    .font(.system(size: 18))
                                 
-                                Text(selectedFileName)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                            }
-                            
-                            Spacer()
-                            
-                            if !isFileSelected {
-                                Text("Upload")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-            .navigationTitle("New Medical Report")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        if let pdfDataBlock = selectedPDFData {
-                            ReportDataManager.saveDynamicReport(
-                                viewContext: viewContext,
-                                currentUser: currentUser,
-                                reportTitle: reportTitle,
-                                reportCategory: reportCategory,
-                                reportSource: reportSource,
-                                selectedDoctor: selectedDoctor,
-                                selectedPDFData: pdfDataBlock,
-                            ) {
-                                dismiss()
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(isFileSelected ? "File Attached" : "Tap to Choose PDF")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                    
+                                    Text(selectedFileName)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                }
+                                
+                                Spacer()
+                                
+                                if !isFileSelected {
+                                    Text("Upload")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
+                        .padding(.vertical, 4)
                     }
-                    .font(.system(size: 16, weight: .bold))
-                    .disabled(reportTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !isFileSelected)
+                }
+                .scrollContentBackground(.hidden)
+                .navigationTitle("New Medical Report")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") { dismiss() }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            if let pdfDataBlock = selectedPDFData {
+                                ReportDataManager.saveDynamicReport(
+                                    viewContext: viewContext,
+                                    currentUser: currentUser,
+                                    reportTitle: reportTitle,
+                                    reportCategory: reportCategory,
+                                    reportSource: reportSource,
+                                    selectedDoctor: selectedDoctor,
+                                    selectedPDFData: pdfDataBlock,
+                                ) {
+                                    dismiss()
+                                }
+                            }
+                        }
+                        .font(.system(size: 16, weight: .bold))
+                        .disabled(reportTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !isFileSelected)
+                    }
                 }
             }
-        }
-        .fileImporter(isPresented: $isFilePickerPresented, allowedContentTypes: [.pdf], allowsMultipleSelection: false) { result in
-            switch result {
-            case .success(let urls):
-                guard let fileURL = urls.first else { return }
-                
-                if fileURL.startAccessingSecurityScopedResource() {
-                    defer { fileURL.stopAccessingSecurityScopedResource() }
+            .fileImporter(isPresented: $isFilePickerPresented, allowedContentTypes: [.pdf], allowsMultipleSelection: false) { result in
+                switch result {
+                case .success(let urls):
+                    guard let fileURL = urls.first else { return }
                     
-                    if let data = try? Data(contentsOf: fileURL) {
-                        self.selectedPDFData = data
-                        self.selectedFileName = fileURL.lastPathComponent
-                        self.isFileSelected = true // 💡 Setting selection state flag to true
+                    if fileURL.startAccessingSecurityScopedResource() {
+                        defer { fileURL.stopAccessingSecurityScopedResource() }
+                        
+                        if let data = try? Data(contentsOf: fileURL) {
+                            self.selectedPDFData = data
+                            self.selectedFileName = fileURL.lastPathComponent
+                            self.isFileSelected = true // 💡 Setting selection state flag to true
+                        }
                     }
+                    
+                case .failure(let error):
+                    print("File Selection Error: \(error.localizedDescription)")
                 }
-                
-            case .failure(let error):
-                print("File Selection Error: \(error.localizedDescription)")
             }
-        }
-        .onAppear {
-            if selectedDoctor == nil && !doctors.isEmpty {
-                selectedDoctor = doctors.first
+            .onAppear {
+                if selectedDoctor == nil && !doctors.isEmpty {
+                    selectedDoctor = doctors.first
+                }
             }
         }
     }

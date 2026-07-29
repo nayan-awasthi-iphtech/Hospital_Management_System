@@ -16,12 +16,10 @@ struct UserHealthChart: View {
     @State private var selectedMetric: Int = 0
     @State private var isSheetShowing: Bool = false
     
-    // Alert state variables for dangerous BPM warning
     @State private var showAlert: Bool = false
     @State private var alertTitle: String = ""
     @State private var alertMessage: String = ""
     
-    // Define clean chart scale boundaries
     private let bpmMin: Double = 40
     private let bpmMax: Double = 160
     

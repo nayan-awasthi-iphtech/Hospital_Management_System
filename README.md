@@ -466,3 +466,16 @@ Seeding only runs once (when `User` entity count is 0).
 | Corner Radius | Cards: 16–24pt, Buttons: 14–16pt, Badges: 8–12pt |
 | Typography | System font, bold for headers, medium for labels |
 | Shadows | Light (`0.03–0.04` opacity, 6–8pt radius) |
+<<<<<<< HEAD
+=======
+
+---
+
+## License
+
+This project is for educational / personal use.
+
+---
+
+**Built by iPHTech 30 — July 2026**
+>>>>>>> f2a17c3 (Added user edit screen and notification sheet)

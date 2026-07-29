@@ -10,7 +10,7 @@ internal import CoreData
 
 struct InsuranceDetailsCardView: View {
     
-    let user: User
+    @ObservedObject var user:User
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -41,7 +41,7 @@ struct InsuranceDetailsCardView: View {
                 InfoRow(
                     icon: "checkmark.shield.fill",
                     label: "Coverage",
-                    value: "Comprehensive"
+                    value: user.coverage ?? "Comprehensive"
                 )
             }
         }

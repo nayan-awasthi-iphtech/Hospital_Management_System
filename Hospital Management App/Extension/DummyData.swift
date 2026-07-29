@@ -25,6 +25,7 @@ extension User {
         user.height = "160"
         user.weight = "55"
         user.phone = "+1 (555) 016-3391"
+        user.coverage = "Comprehensive"
         
         var dateComponents = DateComponents()
         dateComponents.year = 2000
@@ -65,7 +66,7 @@ extension Doctor {
             doctor.department = departments[i]
             doctor.experienceYears = experiences[i]
             doctor.qualification = qualifications[i]
-            doctor.about = abouts[i] // Make sure this matches your Core Data attribute name (e.g., doctor.about or doctor.aboutDoctor)
+            doctor.about = abouts[i] 
             
             if let uiImage = UIImage(named: "doctor\(i+1)") {
                 doctor.imageData = uiImage.jpegData(compressionQuality: 0.8)

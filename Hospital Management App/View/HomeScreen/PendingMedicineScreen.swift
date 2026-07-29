@@ -11,22 +11,34 @@ internal import CoreData
 struct PendingMedicinesSection: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    // Auto-fetching only pending medicines from Core Data
     @FetchRequest(
         entity: Medicine.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
         predicate: NSPredicate(format: "isTaken == %@", NSNumber(value: false)),
         animation: .default
     ) private var pendingMedicines: FetchedResults<Medicine>
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Pending Medicines")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
-                .padding(.horizontal, 15)
-
+            
+            HStack(){
+                Text("Pending Medicines")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 15)
+                
+                Spacer()
+                
+                NavigationLink(destination: MedicineDetailView()){
+                    Text("See All")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.blue)
+                }
+                .padding(.horizontal)
+            }
+            
             if !pendingMedicines.isEmpty {
                 VStack(spacing: 12) {
                     ForEach(pendingMedicines) { medicine in
@@ -35,7 +47,7 @@ struct PendingMedicinesSection: View {
                 }
                 .padding(.horizontal, 15)
             } else {
-                // Empty state fallback card
+                
                 HStack(spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title3)
@@ -65,7 +77,7 @@ struct MedicineRowView: View {
     
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
-            // Pill Icon Badge Container
+        
             Image(systemName: "pill.fill")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(medicine.isTaken ? .green : .teal)
@@ -92,15 +104,15 @@ struct MedicineRowView: View {
             }
             
             Spacer()
-                Text(medicine.isTaken ? "Taken" : "Due")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(medicine.isTaken ? .green : .orange)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill((medicine.isTaken ? Color.green : Color.orange).opacity(0.12))
-                    )
+            Text(medicine.isTaken ? "Taken" : "Due")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(medicine.isTaken ? .green : .orange)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill((medicine.isTaken ? Color.green : Color.orange).opacity(0.12))
+                )
         }
         .padding(14)
         .background(
@@ -111,11 +123,3 @@ struct MedicineRowView: View {
     }
 }
 
-#Preview {
-    let controller = PersistenceController.init(inMemory: true)
-    let context = controller.container.viewContext
-    Medicine.MedicineDummyData(viewContext: context)
-    
-    return PendingMedicinesSection()
-        .environment(\.managedObjectContext, context)
-}

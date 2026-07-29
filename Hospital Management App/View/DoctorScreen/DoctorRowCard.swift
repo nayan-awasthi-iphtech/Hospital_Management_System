@@ -14,39 +14,48 @@ struct DoctorRowCard: View {
     let doctor: Doctor
     
     var body: some View {
-        HStack(spacing:16){
-            if let binaryData = doctor.imageData, let uiImage = UIImage(data: binaryData){
-                Image(uiImage:uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 50, height: 50)
-                    .clipShape(Circle())
-                    .foregroundStyle(Color.red)
-            } else {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.gray)
-            }
-            
-            VStack(alignment: .leading, spacing: 4){
-                Text(doctor.name ?? "Dr Unknown")
-                    .font(.headline)
-                    .foregroundColor(.primary)
+
+            HStack(spacing:16){
+                if let binaryData = doctor.imageData, let uiImage = UIImage(data: binaryData){
+                    Image(uiImage:uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        .foregroundStyle(Color.red)
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(.gray)
+                }
                 
-                Text(doctor.department ?? "General Health")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 4){
+                    Text(doctor.name ?? "Dr Unknown")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text(doctor.department ?? "General Health")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
             }
-            Spacer()
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.2), radius: 6, x:0, y:3)
-        )
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.2), radius: 6, x:0, y:3)
+            )
+            .onAppear {
+                        // Simple print statements for console debugging
+                        print("--- DOCTOR DEBUG ---")
+                        print("Name: \(doctor.name ?? "NIL")")
+                        print("Department: \(doctor.department ?? "NIL")")
+                        print("Department String Length: \(doctor.department?.count ?? 0)")
+                        print("--------------------")
+                    }
     }
 }
 

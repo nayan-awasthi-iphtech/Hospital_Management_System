@@ -93,6 +93,7 @@
         <attribute name="address" optional="YES" attributeType="String"/>
         <attribute name="allergies" optional="YES" attributeType="String"/>
         <attribute name="bloodGroup" optional="YES" attributeType="String"/>
+        <attribute name="coverage" optional="YES" attributeType="String"/>
         <attribute name="dob" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="email" optional="YES" attributeType="String"/>
         <attribute name="emergencyContact" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

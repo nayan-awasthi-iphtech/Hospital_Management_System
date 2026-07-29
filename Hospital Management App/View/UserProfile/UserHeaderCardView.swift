@@ -10,7 +10,7 @@ internal import CoreData
 
 struct UserHeaderCardView: View {
     
-    let user: User
+    @ObservedObject var user: User
     
     @State private var showExpandedQR = false
     
@@ -31,9 +31,11 @@ struct UserHeaderCardView: View {
                         .fill(Color.blue.opacity(0.12))
                         .frame(width: 56, height: 56)
                     
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(.blue)
+                    Image("user1")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 56, height: 56)
+                        .clipShape(Circle())
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
