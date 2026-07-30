@@ -107,20 +107,3 @@ struct Appointment_Booking: View {
     }
 }
 
-//#Preview {
-//    let context = PersistenceController.preview.container.viewContext
-//    
-//    let dummyDoctor = Doctor(context: context)
-//    dummyDoctor.name = "Dr. Alice Green"
-//    dummyDoctor.department = "Cardiology"
-//    
-//    if let uiImage = UIImage(named: "doctor1") {
-//        dummyDoctor.imageData = uiImage.jpegData(compressionQuality: 0.8)
-//    }
-//    
-//    NavigationStack {
-//        Appointment_Booking(doctor: dummyDoctor)
-//            .environment(\.managedObjectContext, context)
-//    }
-//}
-

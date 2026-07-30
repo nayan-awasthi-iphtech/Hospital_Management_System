@@ -63,17 +63,3 @@ struct MedicineDetailView: View {
         }
     }
 }
-
-#Preview {
-    let controller = PersistenceController.init(inMemory: true)
-    let context = controller.container.viewContext
-    
-    User.UserDummyData(viewContext: context)
-    Doctor.DoctorDummyData(viewContext: context)
-    Appointment.AppointmentDummyData(viewContext: context)
-    Prescription.PrescriptionDummyData(viewContext: context)
-    Medicine.MedicineDummyData(viewContext: context)
-    
-    return MedicineDetailView()
-        .environment(\.managedObjectContext, context)
-}

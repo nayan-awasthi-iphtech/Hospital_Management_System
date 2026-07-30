@@ -4,12 +4,22 @@ struct SplashScreenView: View {
     @State private var isActive = false
     @State private var isAnimating = false
     
+    @StateObject private var session = SessionManager.shared
+    @StateObject private var useViewModel = AuthViewModel()
+    
     var body: some View {
         if isActive {
-            RootTabView()
+            if session.isLoggedIn{
+                RootTabView()
+                    .sheet(isPresented: $useViewModel.isProfileComplete){
+                        Text("Complete user Profile First")
+                    }
+            }else {
+                UserLoginView(onLoginSuccessful: {})
+            }
         } else {
             ZStack {
-              
+                
                 LinearGradient(
                     colors: [Color(red: 0.04, green: 0.06, blue: 0.15), Color(red: 0.08, green: 0.15, blue: 0.30)],
                     startPoint: .top, endPoint: .bottom
@@ -17,7 +27,7 @@ struct SplashScreenView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 24) {
-                
+                    
                     Image(systemName: "cross.case.fill")
                         .font(.system(size: 80))
                         .foregroundColor(Color(red: 0.0, green: 0.9, blue: 0.9))

@@ -11,7 +11,7 @@ struct AppointmentBookingHistory: View {
     @State private var ApptToDelete: [Appointment] = []
     
     private var currentUser: User? {
-        PersistenceController.shared.currentUser
+        return SessionManager.shared.getActiveUser(in: viewContext)
     }
     
     private var currentList: [Appointment] {

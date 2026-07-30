@@ -34,7 +34,7 @@ class UserViewModel: ObservableObject {
     func fetchUser(){
         let request: NSFetchRequest<User> = User.fetchRequest()
         do {
-            if let user = try context.fetch(request).first{
+            if let user = SessionManager.shared.getActiveUser(in: context){
                 self.currentUser = user
                 updateUserFields(from: user)
             } else {
@@ -54,6 +54,17 @@ class UserViewModel: ObservableObject {
         self.editInsurancePolicy = user.policyId ?? ""
         self.editInsuranceConverage = user.coverage ?? ""
         self.editWeight = user.weight ?? ""
+    }
+    
+    func clearUserFields() {
+        self.editName = ""
+        self.editEmail = ""
+        self.editPhone = ""
+        self.editEmergencyContact = 0
+        self.editInsuranceDetail = ""
+        self.editInsurancePolicy = ""
+        self.editInsuranceConverage = ""
+        self.editWeight = ""
     }
     
     var isformValid: Bool {
@@ -98,5 +109,10 @@ class UserViewModel: ObservableObject {
         if let user = currentUser{
             updateUserFields(from: user)
         }
+    }
+    func logout() {
+        SessionManager.shared.logout()
+        self.currentUser = nil
+        clearUserFields()
     }
 }

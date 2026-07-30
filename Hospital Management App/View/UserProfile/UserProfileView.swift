@@ -6,10 +6,12 @@ struct UserProfileView: View {
     @State private var isShowEditSheet: Bool = false
     @EnvironmentObject var viewModel: UserViewModel
     
+    @State private var showLogoutAlet: Bool = false
+    
     var body: some View {
         ZStack {
             AppBackgroundView()
-        
+            
             if let user = viewModel.currentUser {
                 VStack(spacing: 10) {
                     
@@ -37,6 +39,22 @@ struct UserProfileView: View {
                             .background(Color.blue.opacity(0.12))
                             .clipShape(Capsule())
                         }
+                        
+                        Button(action: {
+                            showLogoutAlet = true
+                        }) {
+                            HStack(spacing:6){
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    .font(.system(size: 14, weight: .bold))
+                                Text("Logout")
+                                    .font(.subheadline.weight(.semibold))
+                            }
+                            .foregroundColor(.red)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(Color.red.opacity(0.12))
+                            .clipShape(Capsule())
+                        }
                     }
                     .padding(.horizontal)
                     
@@ -62,18 +80,20 @@ struct UserProfileView: View {
                     EditUserProfileSheet()
                         .environmentObject(viewModel)
                 }
+                .alert("Logout", isPresented: $showLogoutAlet){
+                    Button("Logout", role: .destructive) {
+                        viewModel.logout()
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("Are you sure you want to log out of your account")
+                }
             } else {
                 ContentUnavailableView("No User Profile Found", systemImage: "person.crop.circle.badge.exclamationmark")
             }
         }
+        .onAppear {
+            viewModel.fetchUser()
+        }
     }
-}
-
-#Preview {
-    let controller = PersistenceController.preview
-    let sampleUser = controller.currentUser ?? User(context: controller.container.viewContext)
-    
-    UserProfileView()
-        .environment(\.managedObjectContext, controller.container.viewContext)
-        .environmentObject(sampleUser)
 }

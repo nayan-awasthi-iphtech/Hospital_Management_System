@@ -10,29 +10,18 @@ internal import CoreData
 struct PersistenceController {
     static let shared = PersistenceController()
     
-    var currentUser: User? {
-        let request: NSFetchRequest<User> = User.fetchRequest()
-        request.fetchLimit = 1
-        return try? container.viewContext.fetch(request).first
-    }
+    let container: NSPersistentContainer
     
     @MainActor
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let context = result.container.viewContext
         
-        let usr = User.UserDummyData(viewContext: context)
         Doctor.DoctorDummyData(viewContext: context)
-        Appointment.AppointmentDummyData(viewContext: context)
-        Prescription.PrescriptionDummyData(viewContext: context)
         Medicine.MedicineDummyData(viewContext: context)
-        if let us = usr {
-            HealthLog.HealthLogDummyData(viewContext: context, user: us)
-        }
+       
         return result
     }()
-    
-    let container: NSPersistentContainer
     
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Hospital_Management_App")
@@ -53,20 +42,15 @@ struct PersistenceController {
     
     private func checkAndSeedDatabase() {
         let context = container.viewContext
-        let request: NSFetchRequest<User> = User.fetchRequest()
+        let doctorRequest: NSFetchRequest<User> = User.fetchRequest()
         
         do {
-            let count = try context.count(for: request)
+            let count = try context.count(for: doctorRequest)
             if count == 0 {
                 print("Database empty. Seeding permanent entities sequentially...")
-                let usr = User.UserDummyData(viewContext: context)
+                
                 Doctor.DoctorDummyData(viewContext: context)
-                Appointment.AppointmentDummyData(viewContext: context)
-                Prescription.PrescriptionDummyData(viewContext: context)
                 Medicine.MedicineDummyData(viewContext: context)
-                if let us = usr{
-                    HealthLog.HealthLogDummyData(viewContext: context, user:us)
-                }
                 print("Permanent database seeding successful and saved to disk!")
             }
         } catch {

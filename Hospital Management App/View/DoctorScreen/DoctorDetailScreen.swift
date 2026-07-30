@@ -25,7 +25,7 @@ struct DoctorDetailScreen: View {
                     Spacer()
                     
                     Button(action: {
-//                        doctorViewModel.updateDoctorFields(for: doctor)
+                        doctorViewModel.updateDoctorFields(for: doctor)
                         isShowEditSheet = true
                     }) {
                         HStack(spacing: 6) {

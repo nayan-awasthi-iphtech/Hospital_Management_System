@@ -64,8 +64,9 @@ struct DoctorEditScreen: View {
                 
                 ToolbarItem(placement: .confirmationAction){
                     Button("Save"){
-                        doctorViewModel.saveChanges()
+                        if doctorViewModel.saveChanges(){
                             dismiss()
+                        }
                     }
                 }
             }

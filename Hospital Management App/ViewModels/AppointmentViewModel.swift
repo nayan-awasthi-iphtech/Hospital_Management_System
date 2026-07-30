@@ -27,7 +27,7 @@ class AppointmentViewModel: ObservableObject {
     @Published var ApptToDelete: [Appointment] = []
     
     var currentUser: User? {
-        return PersistenceController.shared.currentUser
+        return SessionManager.shared.getActiveUser(in: context)
     }
     
     private var context: NSManagedObjectContext
