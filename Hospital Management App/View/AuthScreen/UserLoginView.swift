@@ -17,107 +17,137 @@ struct UserLoginView: View {
     
     var body: some View {
         NavigationStack{
-            ScrollView{
-                VStack(spacing: 24){
-                    
-                    VStack(spacing: 8){
-                        Image(systemName: "cross.case.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 60, height: 60)
-                            .foregroundStyle(.blue)
+            ZStack{
+                AppBackgroundView()
+                    .ignoresSafeArea()
+                
+                ScrollView{
+                    VStack(spacing: 24){
+                        
+                        VStack(spacing: 8){
+                            ZStack {
+                                // Soft glowing background circle/layer
+                                Circle()
+                                    .fill(Color.blue.opacity(0.12))
+                                    .frame(width: 80, height: 80)
+                                
+                                // Main SF Symbol Icon
+                                Image(systemName: "cross.case.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 36, height: 36)
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.blue, .blue.opacity(0.8)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            }
+                            .frame(width: 96, height: 96)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(Color.white.opacity(0.8))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                            .strokeBorder(Color.orange.opacity(0.2), lineWidth: 1.5)
+                                    )
+                                    .shadow(color: Color.blue.opacity(0.5), radius: 12, x: 0, y: 6)
+                            )
                             .padding(.bottom, 8)
+                            
+                            Text("Welcome Back")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Text("Log in to access your appointments and health records.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.top, 20)
                         
-                        Text("Welcome Back")
-                            .font(.largeTitle)
+                        VStack(spacing: 16){
+                            VStack(alignment: .leading, spacing: 6){
+                                Text("Email Address")
+                                    .font(.title3)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.secondary)
+                                
+                                HStack{
+                                    Image(systemName: "envelope.fill")
+                                        .foregroundStyle(.gray)
+                                    TextField("Enter your email", text: $viewModel.email)
+                                        .keyboardType(.emailAddress)
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
+                                }
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(12)
+                            }
+                            VStack(alignment: .leading, spacing: 6){
+                                Text("Password")
+                                    .font(.title3)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.secondary)
+                                
+                                HStack{
+                                    Image(systemName: "lock")
+                                        .foregroundStyle(.gray)
+                                    TextField("Enter your password", text: $viewModel.password)
+                                        .keyboardType(.phonePad)
+                                }
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(12)
+                            }
+                        }
+                        .padding(.horizontal)
+                        Button(action: {
+                            if viewModel.login(){
+                                onLoginSuccessful()
+                            }
+                        }) {
+                            Text("Log In")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 54)
+                                .background(Color.blue)
+                                .cornerRadius(14)
+                                .shadow(color: Color.blue.opacity(0.3), radius: 6, x: 0, y: 3)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        
+                        HStack{
+                            Text("Don't have a account?")
+                                .foregroundStyle(.secondary)
+                            
+                            Button("Sign Up"){
+                                ShowRegistrationScreen = true
+                            }
                             .fontWeight(.bold)
-                        
-                        Text("Log in to access your appointments and health records.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, 20)
-                    
-                    VStack(spacing: 16){
-                        VStack(alignment: .leading, spacing: 6){
-                            Text("Email Address")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                            
-                            HStack{
-                                Image(systemName: "at")
-                                    .foregroundStyle(.gray)
-                                TextField("Enter your email", text: $viewModel.email)
-                                    .keyboardType(.emailAddress)
-                                    .textInputAutocapitalization(.never)
-                                    .autocorrectionDisabled()
-                            }
-                            .padding()
-                            .background(Color(.systemBackground))
-                            .cornerRadius(12)
+                            .foregroundStyle(.blue)
                         }
-                        VStack(alignment: .leading, spacing: 6){
-                            Text("Password")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                            
-                            HStack{
-                                Image(systemName: "lock")
-                                    .foregroundStyle(.gray)
-                                TextField("Enter your password", text: $viewModel.password)
-                                    .keyboardType(.phonePad)
-                            }
-                            .padding()
-                            .background(Color(.systemBackground))
-                            .cornerRadius(12)
-                        }
+                        .font(.subheadline)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.horizontal)
-                    Button(action: {
-                        if viewModel.login(){
+                }
+                .sheet(isPresented: $ShowRegistrationScreen){
+                    withAnimation{
+                        UserSignupView{
                             onLoginSuccessful()
                         }
-                    }) {
-                        Text("Log In")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(Color.blue)
-                            .cornerRadius(14)
-                            .shadow(color: Color.blue.opacity(0.3), radius: 6, x: 0, y: 3)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    
-                    HStack{
-                        Text("Don't have a account?")
-                            .foregroundStyle(.secondary)
-                        
-                        Button("Sign Up"){
-                            ShowRegistrationScreen = true
-                        }
-                        .fontWeight(.bold)
-                        .foregroundStyle(.blue)
-                    }
-                    .font(.subheadline)
-                    .padding(.bottom, 20)
                 }
-            }
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
-            .sheet(isPresented: $ShowRegistrationScreen){
-                UserSignupView{
-                    onLoginSuccessful()
+                .alert("Registration Error", isPresented: $viewModel.showErrorAlert){
+                    Button("OK", role: .cancel){}
+                } message: {
+                    Text(viewModel.errorMessage ?? "An unkown error occured")
                 }
-            }
-            .alert("Registration Error", isPresented: $viewModel.showErrorAlert){
-                Button("OK", role: .cancel){}
-            } message: {
-                Text(viewModel.errorMessage ?? "An unkown error occured")
             }
         }
     }

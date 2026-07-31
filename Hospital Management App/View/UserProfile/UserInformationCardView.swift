@@ -37,14 +37,10 @@ struct UserInformationCardView: View {
             Divider().opacity(0.5)
 
             VStack(spacing: 14) {
-                InfoRow(icon: "person.fill", label: "Full Name", value: user.name ?? "Alex")
+                InfoRow(icon: "person.fill", label: "Full Name", value: user.name ?? "")
                 Divider().opacity(0.3)
-                InfoRow(icon: "calendar", label: "Date of birth", value: formatDate(for: user.dob))
-                Divider().opacity(0.3)
-                InfoRow(icon: "figure.arms.open", label: "Gender", value: user.gender ?? "Male")
-                Divider().opacity(0.3)
-                InfoRow(icon: "bandage.fill", label: "Allergies", value: user.allergies ?? "None")
-                InfoRow(icon: "phone.fill", label: "Contact", value: String(user.emergencyContact))
+                InfoRow(icon: "at", label: "Email", value: user.email ?? "")
+                InfoRow(icon: "phone.fill", label: "Contact", value: user.phone ?? "")
             }
         }
         .padding(16)

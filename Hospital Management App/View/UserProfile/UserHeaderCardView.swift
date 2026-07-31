@@ -17,10 +17,19 @@ struct UserHeaderCardView: View {
     private var userName: String {
         user.name ?? "Unknown"
     }
-        
+    
     private var patientIDText: String {
         let idString = user.id?.uuidString.prefix(8) ?? "N/A"
         return "Patient ID: \(idString)"
+    }
+    
+    private var profileImage: Image {
+        if let data = user.imageData, let uiImage = UIImage(data: data){
+            return Image(uiImage: uiImage)
+        }
+        else {
+            return Image("user1")
+        }
     }
     
     var body: some View {
@@ -31,7 +40,7 @@ struct UserHeaderCardView: View {
                         .fill(Color.blue.opacity(0.12))
                         .frame(width: 56, height: 56)
                     
-                    Image("user1")
+                    profileImage
                         .resizable()
                         .scaledToFill()
                         .frame(width: 56, height: 56)
@@ -59,17 +68,6 @@ struct UserHeaderCardView: View {
                         .background(Color.blue.opacity(0.08), in: Circle())
                 }
             }
-            
-            Divider()
-                .opacity(0.5)
-            
-            HStack {
-                UserStatViewItem(title: "Blood Group", value: user.bloodGroup ?? "A+")
-                Spacer()
-                UserStatViewItem(title: "Age", value: CalculateAge(from: user.dob))
-                Spacer()
-                UserStatViewItem(title: "Weight", value: user.weight ?? "99")
-            }
         }
         .padding(16)
         .background(
@@ -86,12 +84,6 @@ struct UserHeaderCardView: View {
                 patientID: patientIDText
             )
         }
-    }
-    
-    private func CalculateAge(from date: Date?) -> String {
-        guard let dob = date else { return "99 years" }
-        let age = Calendar.current.dateComponents([.year], from: dob, to: Date()).year ?? 0
-        return "\(age) years"
     }
 }
 

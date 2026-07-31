@@ -9,9 +9,11 @@ import SwiftUI
 
 struct UserHeaderCard: View {
     
-    let currentUser: User
+    @ObservedObject var currentUser: User
     let hasUpcomingAppointment: Bool
     let onNotificationTap: () -> Void
+    
+    @State private var navigateToProfile: Bool = false
     
     private var greetingMessage: String {
         let hour = Calendar.current.component(.hour, from: Date())
@@ -24,6 +26,14 @@ struct UserHeaderCard: View {
             return "Good Evening"
         default:
             return "Good Night"
+        }
+    }
+    
+    private var profileImage: Image {
+        if let data = currentUser.imageData, let uiImage = UIImage(data: data) {
+            return Image(uiImage: uiImage)
+        } else {
+            return Image("user1")
         }
     }
     
@@ -43,6 +53,17 @@ struct UserHeaderCard: View {
             
             Spacer()
             
+            profileImage
+                .resizable()
+                .scaledToFill()
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+                .onTapGesture {
+                    navigateToProfile = true
+                }
+                .navigationDestination(isPresented: $navigateToProfile){
+                    UserProfileView()
+                }
             Button(action: onNotificationTap){
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "bell.fill")
@@ -65,19 +86,6 @@ struct UserHeaderCard: View {
                             .offset(x: -1, y: 1)
                     }
                 }
-            }
-            if let uiImage = UIImage(named: "user1"){
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 50, height: 50)
-                    .clipShape(Circle())
-            } else {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60, height: 60)
-                    .foregroundColor(.gray)
             }
         }
         .padding(.horizontal, 20)

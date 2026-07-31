@@ -12,6 +12,7 @@ struct EditUserProfileSheet: View {
     
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var viewModel: UserViewModel
+    @State private var profileImageData: Data? = nil
     
     var body: some View {
         NavigationStack {
@@ -19,6 +20,12 @@ struct EditUserProfileSheet: View {
                 AppBackgroundView()
                 
                 Form {
+                    
+                    Section {
+                        ImagePicker(selectedImageData: $profileImageData)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .listRowBackground(Color.clear)
                     Section(header: Text("Personal Info")) {
                         VStack(spacing:20){
                             HStack {
@@ -43,8 +50,7 @@ struct EditUserProfileSheet: View {
                             HStack {
                                 Text("Contact No.")
                                     .frame(width: 100, alignment: .leading)
-                                TextField("Enter emergency contact no.", value: $viewModel.editEmergencyContact, format: .number.grouping(.never))
-                                    .keyboardType(.numberPad)
+                                TextField("Enter emergency contact no.", text: $viewModel.editEmergencyContact)
                             }
                         }
                         .listRowBackground(Color.white.opacity(0.42))
@@ -99,4 +105,5 @@ struct EditUserProfileSheet: View {
 
 #Preview {
     EditUserProfileSheet()
+        .environmentObject(UserViewModel())
 }

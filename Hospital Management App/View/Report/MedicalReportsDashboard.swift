@@ -4,7 +4,7 @@ internal import CoreData
 struct MedicalReportsDashboard: View {
     
     @Environment(\.managedObjectContext) var viewContext
-    @EnvironmentObject var currentUser: User
+    @ObservedObject var currentUser: User
     
     @StateObject private var viewModel = ReportViewModel()
     

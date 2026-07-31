@@ -15,25 +15,23 @@ struct MetricCountersRow: View {
     var body: some View {
         HStack(spacing: 12) {
             
-            // 1. Appointments Card
             MetricCounterCard(
                 count: appointmentCount,
-                title: "Appointments",
+                title: "Total Appointments",
                 iconName: "calendar.badge.clock",
                 iconColor: .blue
             )
           
             MetricCounterCard(
                 count: reportCount,
-                title: "Reports",
+                title: "Total Reports",
                 iconName: "doc.text.fill",
                 iconColor: .teal
             )
             
-            // 3. Medicines Card
             MetricCounterCard(
                 count: prescriptionCount,
-                title: "Medicines",
+                title: "Total Medicines",
                 iconName: "pill.fill",
                 iconColor: .orange
             )

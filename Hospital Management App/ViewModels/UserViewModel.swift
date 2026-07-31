@@ -17,12 +17,13 @@ class UserViewModel: ObservableObject {
     @Published var editName: String = ""
     @Published var editEmail: String = ""
     @Published var editPhone: String = ""
-    @Published var editEmergencyContact: Int32 = 0
+    @Published var editEmergencyContact: String = ""
     @Published var editInsuranceDetail: String = ""
     @Published var editInsurancePolicy: String = ""
     @Published var editInsuranceConverage: String = ""
     @Published var editWeight:String = ""
     @Published var errorMessage: String?
+    @Published var edituserProfileImage: Data? = nil
     
     private let context: NSManagedObjectContext
     
@@ -49,22 +50,28 @@ class UserViewModel: ObservableObject {
         self.editName = user.name ?? ""
         self.editEmail = user.email ?? ""
         self.editPhone = user.phone ?? ""
-        self.editEmergencyContact = user.emergencyContact
+        if user.emergencyContact != 0 {
+                    self.editEmergencyContact = String(user.emergencyContact)
+                } else {
+                    self.editEmergencyContact = ""
+                }
         self.editInsuranceDetail = user.insuranceDetails ?? ""
         self.editInsurancePolicy = user.policyId ?? ""
         self.editInsuranceConverage = user.coverage ?? ""
         self.editWeight = user.weight ?? ""
+        self.edituserProfileImage = user.imageData
     }
     
     func clearUserFields() {
         self.editName = ""
         self.editEmail = ""
         self.editPhone = ""
-        self.editEmergencyContact = 0
+        self.editEmergencyContact = ""
         self.editInsuranceDetail = ""
         self.editInsurancePolicy = ""
         self.editInsuranceConverage = ""
         self.editWeight = ""
+        self.edituserProfileImage = nil
     }
     
     var isformValid: Bool {
@@ -84,11 +91,12 @@ class UserViewModel: ObservableObject {
         user.name = editName
         user.email = editEmail
         user.phone = editPhone
-        user.emergencyContact = editEmergencyContact
+        user.emergencyContact = Int32(editEmergencyContact) ?? 0
         user.insuranceDetails = editInsuranceDetail
         user.policyId = editInsurancePolicy
         user.coverage = editInsuranceConverage
         user.weight = editWeight
+        user.imageData = edituserProfileImage
         
         do {
             try context.save()

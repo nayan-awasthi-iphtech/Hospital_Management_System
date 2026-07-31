@@ -4,7 +4,9 @@ internal import CoreData
 struct UserProfileView: View {
     
     @State private var isShowEditSheet: Bool = false
+    @State private var isShowCompleteProfileSheet: Bool = false
     @EnvironmentObject var viewModel: UserViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     @State private var showLogoutAlet: Bool = false
     
@@ -60,15 +62,33 @@ struct UserProfileView: View {
                     
                     ScrollView {
                         VStack(spacing: 10) {
+                            if authViewModel.isAnyDetailMissing(for: user){
+                                CompleteProfileBannerView(){
+                                    isShowCompleteProfileSheet = true
+                                }
+                            }
                             UserHeaderCardView(user: user)
                             Divider().opacity(0.5)
                             UserInformationCardView(user: user)
                             Divider().opacity(0.5)
-                            EmergencyContactCardView(user: user)
+                            if user.emergencyContact != 0 {
+                                EmergencyContactCardView(user: user)
+                            }
                             Divider().opacity(0.5)
-                            InsuranceDetailsCardView(user: user)
+                            
+                            if user.dob != nil,
+                               let bloodGrp = user.bloodGroup, !bloodGrp.isEmpty,
+                               let gender = user.gender, !gender.isEmpty {
+                                PersonalnfoCard(user: user)
+                            }
+                            if let details = user.insuranceDetails, !details.isEmpty{
+                                InsuranceDetailsCardView(user: user)
+                            }
                             Divider().opacity(0.5)
-                            BMICalculatorView(currentUser: user)
+                            if let height = user.height, !height.isEmpty,
+                               let weight = user.weight, !weight.isEmpty {
+                                BMICalculatorView(currentUser: user)
+                            }
                             Divider().opacity(0.5)
                             UserHealthChart(currentUser: user)
                         }
@@ -78,6 +98,10 @@ struct UserProfileView: View {
                 }
                 .sheet(isPresented: $isShowEditSheet) {
                     EditUserProfileSheet()
+                        .environmentObject(viewModel)
+                }
+                .sheet(isPresented: $isShowCompleteProfileSheet){
+                    UserCompleteProfileView()
                         .environmentObject(viewModel)
                 }
                 .alert("Logout", isPresented: $showLogoutAlet){

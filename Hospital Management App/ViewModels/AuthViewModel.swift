@@ -112,7 +112,8 @@ class AuthViewModel: ObservableObject {
         gender: String,
         height: String,
         weight: String,
-        dob: Date
+        dob: Date,
+        userProfileImageData: Data?
     ) -> Bool {
         
         guard let activeUser = SessionManager.shared.getActiveUser(in:context) else {
@@ -130,6 +131,7 @@ class AuthViewModel: ObservableObject {
         activeUser.height = height
         activeUser.weight = weight
         activeUser.dob = dob
+        activeUser.imageData = userProfileImageData
         
         do {
             try context.save()
@@ -154,7 +156,8 @@ class AuthViewModel: ObservableObject {
         
         return try? context.fetch(request).first
     }
-    private func isAnyDetailMissing(for user: User) -> Bool {
+    
+     func isAnyDetailMissing(for user: User) -> Bool {
         return user.bloodGroup == nil || user.bloodGroup?.isEmpty == true ||
         user.allergies == nil ||
         user.insuranceDetails == nil || user.insuranceDetails?.isEmpty == true ||

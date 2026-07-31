@@ -62,7 +62,7 @@ struct UserSignupView: View {
                                 .foregroundStyle(.secondary)
                             
                             HStack{
-                                Image(systemName: "at")
+                                Image(systemName: "envelope.fill")
                                     .foregroundStyle(.gray)
                                 TextField("Enter your email", text: $viewModel.email)
                                     .keyboardType(.emailAddress)

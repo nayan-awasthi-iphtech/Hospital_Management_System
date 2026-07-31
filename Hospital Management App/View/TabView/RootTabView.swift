@@ -6,6 +6,7 @@ struct RootTabView: View {
     @State private var selectedTab = 0
     @StateObject private var userViewModel = UserViewModel()
     @StateObject private var doctorViewModel = DoctorViewModel()
+    @StateObject var authViewModel = AuthViewModel()
     
     var body: some View {
         Group {
@@ -29,7 +30,7 @@ struct RootTabView: View {
                         }
                         .tag(2)
                     
-                    MedicalReportsDashboard()
+                    MedicalReportsDashboard(currentUser: user)
                         .tabItem {
                             Label("Reports", systemImage: "doc.text.fill")
                         }
@@ -42,9 +43,9 @@ struct RootTabView: View {
                         .tag(4)
                 }
                 .tint(.blue)
-                .environmentObject(user)
                 .environmentObject(userViewModel)
                 .environmentObject(doctorViewModel)
+                .environmentObject(authViewModel)
             } else {
                 ContentUnavailableView("No User Found", systemImage: "person.crop.circle.badge.exclamationmark")
             }

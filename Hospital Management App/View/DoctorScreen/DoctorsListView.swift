@@ -129,18 +129,6 @@ struct DoctorsListView: View {
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: "Search doctors by name or specialty"
             )
-//            .alert("Complete Your Profile", isPresented: $showCompleteProfileAlert) {
-//                            Button("Update Now") {
-//                                showCompleteProfileSheet = true
-//                            }
-//                            Button("Later", role: .cancel) { }
-//                        } message: {
-//                            Text("Your medical profile details (blood group, emergency contact, etc.) are incomplete. Please complete them for better care management.")
-//                        }
-//                        // Sheet to update details if tapped
-//                        .sheet(isPresented: $showCompleteProfileSheet) {
-//                            CompleteProfileView(authViewModel: AuthViewModel())
-//                        }
             .sheet(isPresented: $showAddDoctorSheet) {
                 AddDoctorSheetView()
             }

@@ -35,7 +35,7 @@ struct BMICalculatorView: View {
               let weightStr = currentUser.weight,
               let heightVal = Double(heightStr),
               let weightVal = Double(weightStr) else {
-            return 23.8
+            return 0.0
         }
         
         return bmiCalculatorDouble(height: heightVal, weight: weightVal)

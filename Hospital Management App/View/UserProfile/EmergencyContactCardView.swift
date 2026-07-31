@@ -12,6 +12,11 @@ struct EmergencyContactCardView: View {
     
     let user: User
     
+    private var contactPhoneString: String {
+        guard user.emergencyContact != 0 else { return "Not Provided" }
+        return "\(user.emergencyContact)"
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Emergency Contact")
@@ -31,27 +36,21 @@ struct EmergencyContactCardView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("John Rodriguez")
+                    Text("Emergency Contact")
                         .font(.subheadline)
                         .fontWeight(.bold)
                         .foregroundStyle(.primary)
                     
-                    Text("Husband • \(user.phone ?? "9999999999")")
+                    Text(contactPhoneString)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 
                 Spacer()
                 
-                Button(action: {
-                    if let phone = user.phone, let url = URL(string: "tel://\(phone)") {
-                        UIApplication.shared.open(url)
-                    }
-                }) {
-                    Image(systemName: "phone.circle.fill")
-                        .font(.system(size: 38, weight: .medium))
-                        .foregroundStyle(.red)
-                }
+                Image(systemName: "phone.circle.fill")
+                    .font(.system(size: 38, weight: .medium))
+                    .foregroundStyle(user.emergencyContact != 0 ? .red : .gray.opacity(0.4))
             }
         }
         .padding(16)
@@ -68,14 +67,15 @@ struct EmergencyContactCardView: View {
     }
 }
 
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    let request: NSFetchRequest<User> = User.fetchRequest()
-    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
-    
-    ZStack {
-        Color(red: 0.96, green: 0.95, blue: 0.93)
-            .ignoresSafeArea()
-        EmergencyContactCardView(user: sampleUser)
-    }
-}
+//#Preview {
+//    let context = PersistenceController.preview.container.viewContext
+//    let request: NSFetchRequest<User> = User.fetchRequest()
+//    let sampleUser = (try? context.fetch(request))?.first ?? User(context: context)
+//    sampleUser.emergencyContact = 9876543210
+//    
+//    return ZStack {
+//        Color(red: 0.96, green: 0.95, blue: 0.93)
+//            .ignoresSafeArea()
+//        EmergencyContactCardView(user: sampleUser)
+//    }
+//}
