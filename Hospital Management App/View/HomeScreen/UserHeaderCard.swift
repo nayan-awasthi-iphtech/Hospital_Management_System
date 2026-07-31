@@ -12,8 +12,7 @@ struct UserHeaderCard: View {
     @ObservedObject var currentUser: User
     let hasUpcomingAppointment: Bool
     let onNotificationTap: () -> Void
-    
-    @State private var navigateToProfile: Bool = false
+    @Binding var selectedTab: Int
     
     private var greetingMessage: String {
         let hour = Calendar.current.component(.hour, from: Date())
@@ -59,10 +58,7 @@ struct UserHeaderCard: View {
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())
                 .onTapGesture {
-                    navigateToProfile = true
-                }
-                .navigationDestination(isPresented: $navigateToProfile){
-                    UserProfileView()
+                    selectedTab = 4
                 }
             Button(action: onNotificationTap){
                 ZStack(alignment: .topTrailing) {

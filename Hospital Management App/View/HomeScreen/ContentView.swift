@@ -39,8 +39,7 @@ struct HomeScreen: View {
                         
                         UserHeaderCard(currentUser: currentUser, hasUpcomingAppointment: hasUpcomingAppointment, onNotificationTap: {
                             showNotificationsSheet = true
-                        }
-                        )
+                        }, selectedTab: $selectedTab)
                         HealthInfoCard()
                         
                         MetricCountersRow(

@@ -23,14 +23,16 @@ A comprehensive iOS hospital management application built with **SwiftUI** and *
 
 | Module | Capabilities |
 |---|---|
-| **Home Dashboard** | Greeting header, health summary card, metric counters, upcoming appointment preview, pending medicines list |
+| **Authentication** | Email/password signup & login with session persistence (UserDefaults), logout, duplicate-email validation, error alerts |
+| **Home Dashboard** | Greeting header, health summary card, metric counters, upcoming appointment preview, pending medicines list, notification bell with badge |
 | **Appointments** | Book appointments with doctors (date + time slot picker), view upcoming/history, cancel, reschedule, delete with confirmation |
 | **Doctors** | Browse, search, and filter by specialty. Add new doctors with photo picker. View doctor detail and book directly from profile |
 | **Medical Reports** | Upload PDF reports (patient or hospital sourced), associate with doctors, search/filter, view inline with PDFKit, delete |
 | **Medicine Tracker** | View all medicines, toggle taken status with live progress bar, water intake tracker (local state) |
 | **User Profile** | Personal info, emergency contact with tap-to-call, insurance details, BMI calculator, QR code generation, health vitals chart (BPM & SpO2) with add-new-reading sheet and health alerts |
-| **Notifications** | Local push notifications scheduled 0 minutes before appointments, instant confirmation notifications |
-| **Splash Screen** | Animated branded splash screen ("CareFlow") with spring animations |
+| **Profile Completion** | First-launch banner + alert prompting users to complete missing medical details (blood group, emergency contact, etc.) |
+| **Notifications** | Local push notifications scheduled 0 minutes before appointments, instant confirmation notifications, notification sheet listing appointment alerts |
+| **Splash Screen** | Animated branded splash screen ("CareFlow") with spring animations, routes to Login or Home based on session |
 
 ---
 
@@ -59,23 +61,29 @@ App Entry (Hospital_Management_AppApp)
     │
     ├── NotificationManager (Singleton — Local Notifications)
     │
+    ├── SessionManager (Singleton — logged-in user ID in UserDefaults)
+    │
     └── SplashScreenView (Animated, 2.5s)
             │
-            └── RootTabView (6 Tabs)
+            ├── isLoggedIn == false → UserLoginView
+            │       ├── Login form (email + password)
+            │       └── Signup sheet → UserSignupView → creates User
+            │
+            └── isLoggedIn == true → RootTabView (5 Tabs)
                     │
                     ├── Tab 0: HomeScreen
                     ├── Tab 1: AppointmentBookingHistory
                     ├── Tab 2: DoctorsListView
                     ├── Tab 3: MedicalReportsDashboard
-                    ├── Tab 4: UserProfileView
-                    └── Tab 5: MedicineDetailView
+                    └── Tab 4: UserProfileView
 ```
 
 **Design Patterns Used:**
-- **MVVM-lite** — Views hold `@FetchRequest` for data, business logic in view methods
-- **Singleton** — `PersistenceController.shared`, `NotificationManager.shared`
-- **Environment Injection** — `managedObjectContext` and `User` passed via `.environment()` / `.environmentObject()`
+- **MVVM** — ViewModels (`AuthViewModel`, `UserViewModel`, `DoctorViewModel`, `AppointmentViewModel`, `ReportViewModel`) own business logic; views observe `@Published` state / `@FetchRequest`
+- **Singleton** — `PersistenceController.shared`, `NotificationManager.shared`, `SessionManager.shared`
+- **Environment Injection** — `managedObjectContext` injected via `.environment()`, ViewModels via `.environmentObject()`
 - **Composition** — Reusable card components (`DoctorRowCard`, `AppointmentCardView`, `MedicineCardView`, `InfoRow`, etc.)
+- **Session-Driven Routing** — `SplashScreenView` picks Login vs. TabView from `SessionManager.isLoggedIn`
 
 ---
 
@@ -88,25 +96,44 @@ Hospital Management App/
 ├── Persistence.swift                          # Core Data stack + seeding logic
 │
 ├── Components/
-│   ├── SplashScreen.swift                     # Animated launch screen
-│   └── NotificationManager.swift              # Local notification manager
+│   ├── SplashScreen.swift                     # Animated launch screen + session routing
+│   ├── NotificationManager.swift              # Local notification manager
+│   ├── AppBackgroundModifier.swift            # Warm beige gradient background
+│   └── ImagePicker.swift                      # PhotosPicker wrapper for profile images
 │
 ├── Extension/
-│   └── DummyData.swift                        # Seed data for all entities
+│   └── DummyData.swift                        # Seed data (Doctors + Medicines) + time slots
+│
+├── Manager/
+│   └── SessionManager.swift                   # Logged-in user session (UserDefaults)
+│
+├── ViewModels/
+│   ├── AuthViewModel.swift                    # Signup / login / profile completion logic
+│   ├── UserViewModel.swift                    # Current user + edit profile logic
+│   ├── DoctorViewModel.swift                  # Doctor CRUD logic
+│   ├── AppointmentViewModel.swift             # Appointment fetch / booking logic
+│   └── ReportViewModel.swift                  # Report fetch logic
 │
 ├── Hospital_Management_App.xcdatamodeld/      # Core Data model (7 entities)
 │
 ├── View/
+│   ├── AuthScreen/
+│   │   ├── UserLoginView.swift                # Login screen (email + password)
+│   │   └── UserSignupView.swift               # Signup screen (name, email, phone, password)
+│   │
 │   ├── TabView/
-│   │   └── RootTabView.swift                  # Main tab bar (6 tabs)
+│   │   └── RootTabView.swift                  # Main tab bar (5 tabs)
 │   │
 │   ├── HomeScreen/
 │   │   ├── ContentView.swift                  # Home dashboard
+│   │   ├── UserHeaderCard.swift               # Greeting + avatar (switches to User tab) + bell
 │   │   ├── HealthInfoCard.swift               # Static health summary card
 │   │   ├── MetricCounterRow.swift             # Appointments/Reports/Medicines counters
 │   │   ├── PendingMedicineScreen.swift        # Pending medicines list
+│   │   ├── NotificationSheet.swift            # Upcoming appointment notifications list
+│   │   ├── WaterIntakeCardView.swift          # 8-glass water intake tracker
 │   │   └── Upcoming_Appointments/
-│   │       └── UpcomingAppointmentCard.swift   # Next upcoming appointment card
+│   │       └── UpcomingAppointmentCard.swift  # Next upcoming appointment card
 │   │
 │   ├── AppointmentPage/
 │   │   ├── AppointmentBookingPage/
@@ -130,27 +157,29 @@ Hospital Management App/
 │   ├── MedicineScreen/
 │   │   ├── MedicineDetailView.swift           # Medicine list + progress header
 │   │   ├── MedicineCardView.swift             # Individual medicine card (toggle taken)
-│   │   ├── MedicineProgressHeaderView.swift   # Green progress bar header
-│   │   └── WaterIntakeCardView.swift          # Water intake tracker
+│   │   └── MedicineProgressHeaderView.swift   # Green progress bar header
 │   │
 │   ├── Report/
 │   │   ├── MedicalReportsDashboard.swift      # Report list with search/filter
 │   │   ├── UploadReportView.swift             # Upload PDF form (fileImporter)
 │   │   ├── ReportRowCardView.swift            # Report list row card
-│   │   ├── PdfViewer.swift                    # PDFKit UIViewRepresentable
-│   │   └── SaveDataHelper.swift               # ReportDataManager save helper
+│   │   └── PdfViewer.swift                    # PDFKit UIViewRepresentable
 │   │
 │   └── UserProfile/
 │       ├── UserProfileView.swift              # Profile screen (composes all cards)
 │       ├── UserHeaderCardView.swift           # Name, patient ID, QR button
 │       ├── UserInformationCardView.swift      # Personal info (name, DOB, gender, allergies)
+│       ├── PersonalnfoCard.swift              # Editable personal info card
 │       ├── EmergencyContactCardView.swift     # Emergency contact + tap-to-call
 │       ├── InsuranceDetailsCardView.swift     # Insurance provider, policy, coverage
 │       ├── BMICalculator.swift                # BMI from height/weight + status
 │       ├── UserHealthChart.swift              # Swift Charts BPM/SpO2 line graph
 │       ├── UserHealthAddSheet.swift           # Add new vitals reading form
-│       ├── UserStatItemView.swift             # Reusable stat item component
-│       └── ExpanedQRModal.swift               # Full-screen QR code modal
+│       ├── ExpanedQRModal.swift               # Full-screen QR code modal
+│       ├── EditUserProfileSheet.swift         # Edit profile form sheet
+│       └── UserCompleteProfileScreen/
+│           ├── UserCompleteProfileView.swift  # Full profile completion form
+│           └── CompleteProfileBannerView.swift # "Complete your profile" banner
 │
 └── Assets.xcassets/
     ├── AccentColor.colorset/
@@ -196,18 +225,21 @@ Hospital Management App/
 |---|---|---|
 | id | UUID | Unique identifier |
 | name | String | Full name |
+| email | String | Login email (lowercased) |
+| password | String | Login password |
+| phone | String | Phone number |
 | dob | Date | Date of birth |
 | gender | String | Gender |
 | bloodGroup | String | Blood group (e.g., "AB+") |
 | height | String | Height in cm |
 | weight | String | Weight in kg |
 | allergies | String | Known allergies |
-| phone | String | Phone number |
-| email | String | Email address |
 | address | String | Home address |
 | emergencyContact | Int32 | Emergency contact number |
 | insuranceDetails | String | Insurance provider |
 | policyId | String | Policy number |
+| coverage | String | Coverage type |
+| imageData | Binary | Profile photo (JPEG) |
 | **Relationships** | | → Appointments, Medicines, Prescriptions, Reports, HealthLogs |
 
 #### Doctor
@@ -281,20 +313,38 @@ Hospital Management App/
 App Launch → NotificationManager.requestNotificationPermission()
            → PersistenceController.shared (loads Core Data + seeds if empty)
            → SplashScreenView (animated "CareFlow" logo, 2.5s)
-           → RootTabView
+           → SessionManager.isLoggedIn?
+               ├── No  → UserLoginView (login form / signup sheet)
+               └── Yes  → RootTabView (5 tabs)
 ```
 
-### 2. Home Screen (Tab 0)
+### 2. Authentication Flow
+```
+UserLoginView
+    ├── Enter email + password → AuthViewModel.login()
+    │       → Validates credentials against Core Data
+    │       → SessionManager.currentUserID saved to UserDefaults
+    │       → If profile details missing → isProfileComplete → prompts to complete
+    ├── "Sign Up" → UserSignupView (sheet)
+    │       → Name, email, phone, password (min 6 chars)
+    │       → AuthViewModel.signUp() → creates User entity
+    │       → Sets session → routes to app
+    └── Logout (from User Profile) → AuthViewModel.logout() → clears session → Login screen
+```
+
+### 3. Home Screen (Tab 0)
 - Fetches all Appointments and Medicines via `@FetchRequest`
 - Filters to current user's data
 - Displays:
-  - **Header:** Greeting with user name + notification bell icon
+  - **Header:** Greeting with user name + notification bell icon (badge when appointments upcoming)
+    - Tap avatar → switches to User tab (index 4)
+    - Tap bell → NotificationsSheet listing upcoming appointment alerts
   - **HealthInfoCard:** Static health summary (heart rate, BP, O₂, steps)
   - **MetricCountersRow:** Count of user's appointments, reports, and medicines
   - **UpcomingAppointmentCard:** Next upcoming (non-cancelled, non-completed) appointment with "See All" link
-  - **PendingMedicinesSection:** Medicines where `isTaken == false`
+  - **PendingMedicinesSection:** Medicines where `isTaken == false` → links to MedicineDetailView
 
-### 3. Appointment Booking Flow
+### 4. Appointment Booking Flow
 ```
 DoctorsListView → tap doctor → DoctorDetailScreen
     → "Book Appointment" → Appointment_Booking
@@ -308,7 +358,7 @@ DoctorsListView → tap doctor → DoctorDetailScreen
             → "Go Back to Bookings" → switches to Appointments tab
 ```
 
-### 4. Appointment Management
+### 5. Appointment Management
 ```
 AppointmentBookingHistory
     ├── Segmented Picker: "Upcoming" (Scheduled) | "History" (Completed/Cancelled)
@@ -319,7 +369,7 @@ AppointmentBookingHistory
     └── Swipe to delete → confirmation alert → permanently removes from Core Data
 ```
 
-### 5. Doctor Management
+### 6. Doctor Management
 ```
 DoctorsListView
     ├── Horizontal SpecialtyFilterView (All, Cardiology, Neurology, etc.)
@@ -332,7 +382,7 @@ DoctorsListView
         → "Save Doctor" → creates Doctor entity
 ```
 
-### 6. Medical Reports Flow
+### 7. Medical Reports Flow
 ```
 MedicalReportsDashboard
     ├── Search bar (by report title)
@@ -345,7 +395,7 @@ MedicalReportsDashboard
         → "Save" → ReportDataManager.saveDynamicReport() → creates Report entity
 ```
 
-### 7. Medicine Tracker
+### 8. Medicine Tracker
 ```
 MedicineDetailView
     ├── MedicineProgressHeaderView (taken/total count + progress bar)
@@ -355,7 +405,7 @@ MedicineDetailView
     └── WaterIntakeCardView (local state, 8-glass tracker with add/remove)
 ```
 
-### 8. User Profile
+### 9. User Profile
 ```
 UserProfileView
     ├── UserHeaderCardView
@@ -396,18 +446,14 @@ UserProfileView
 
 ## Dummy Data Seeding
 
-On first launch, `PersistenceController.checkAndSeedDatabase()` seeds:
+On first launch, `PersistenceController.checkAndSeedDatabase()` seeds permanent entities when the `User` entity count is 0:
 
 | Entity | Count | Details |
 |---|---|---|
-| User | 1 | Emily Rodriguez, AB+, Austin TX |
-| Doctor | 5 | Alice Green (Cardiology), Brian Patel (Pediatrics), Clara Oswald (Neurology), David Kim (Orthopedics), Elena Rostova (Dermatology) |
-| Appointment | 5 | Mix of Scheduled, Completed, and Canceled statuses |
-| Prescription | 5 | Linked to appointments, with doctor notes |
+| Doctor | 5 | Alice Green (Cardiology), Brian Patel (Pediatrics), Clara Oswald (Neurology), David Kim (Orthopedics), Elena Rostova (Dermatology) — with photos from Assets |
 | Medicine | 4 | Amlodipine, Metformin, Atorvastatin, Vitamin D3 |
-| HealthLog | 5 | Monthly BPM and SpO2 readings over 5 months |
 
-Seeding only runs once (when `User` entity count is 0).
+> **Note:** Appointments, Prescriptions, and HealthLogs are no longer seeded — users create them through the app after registering. Seeding runs only once (when no `User` records exist).
 
 ---
 
@@ -466,8 +512,6 @@ Seeding only runs once (when `User` entity count is 0).
 | Corner Radius | Cards: 16–24pt, Buttons: 14–16pt, Badges: 8–12pt |
 | Typography | System font, bold for headers, medium for labels |
 | Shadows | Light (`0.03–0.04` opacity, 6–8pt radius) |
-<<<<<<< HEAD
-=======
 
 ---
 
@@ -478,4 +522,3 @@ This project is for educational / personal use.
 ---
 
 **Built by iPHTech 30 — July 2026**
->>>>>>> f2a17c3 (Added user edit screen and notification sheet)
