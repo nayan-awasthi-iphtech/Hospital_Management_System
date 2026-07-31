@@ -48,14 +48,6 @@ struct DoctorRowCard: View {
                     .fill(Color.white)
                     .shadow(color: Color.black.opacity(0.2), radius: 6, x:0, y:3)
             )
-            .onAppear {
-                        // Simple print statements for console debugging
-                        print("--- DOCTOR DEBUG ---")
-                        print("Name: \(doctor.name ?? "NIL")")
-                        print("Department: \(doctor.department ?? "NIL")")
-                        print("Department String Length: \(doctor.department?.count ?? 0)")
-                        print("--------------------")
-                    }
     }
 }
 

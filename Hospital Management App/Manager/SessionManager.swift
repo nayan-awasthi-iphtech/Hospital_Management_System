@@ -17,10 +17,8 @@ class SessionManager: ObservableObject {
         didSet {
             if let id = currentUserID {
                 UserDefaults.standard.set(id, forKey: "LoggedInUserID")
-                print("💾 [SessionManager] Saved user session to UserDefaults: \(id)")
             } else {
                 UserDefaults.standard.removeObject(forKey: "LoggedInUserID")
-                print("🗑️ [SessionManager] Cleared user session from UserDefaults")
             }
         }
     }
@@ -30,18 +28,14 @@ class SessionManager: ObservableObject {
     }
     
     private init() {
-        // Restore active user session from UserDefaults on app launch!
         if let savedID = UserDefaults.standard.string(forKey: "LoggedInUserID"), !savedID.isEmpty {
             self.currentUserID = savedID
-            print("🚀 [SessionManager] Restored active session on startup: \(savedID)")
         } else {
-            print("🚀 [SessionManager] No active session found on startup.")
         }
     }
     
     func getActiveUser(in context: NSManagedObjectContext) -> User? {
         guard let idString = currentUserID, let uuid = UUID(uuidString: idString) else {
-            print("❌ [SessionManager] Invalid UUID string in session: \(currentUserID ?? "nil")")
             return nil
         }
         
@@ -52,19 +46,15 @@ class SessionManager: ObservableObject {
         do {
             let user = try context.fetch(request).first
             if let user = user {
-                print("👤 [SessionManager] Active user fetched successfully: \(user.name ?? "Unknown")")
             } else {
-                print("⚠️ [SessionManager] No Core Data record matching ID: \(idString)")
             }
             return user
         } catch {
-            print("❌ [SessionManager] Error fetching active user: \(error.localizedDescription)")
             return nil
         }
     }
     
     func logout() {
-        print("🚪 [SessionManager] User logging out...")
         self.currentUserID = nil
     }
 }

@@ -15,14 +15,6 @@ struct AddDoctorSheetView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
-    // MARK: - Form States (UI Inputs)
-    //    @State private var doctorName: String = ""
-    //    @State private var selectedDepartment: String = "General Medicine"
-    //    @State private var yearsOfExperience: Int16? = nil
-    //    @State private var doctorBio: String = ""
-    //    @State private var qualification : String = ""
-    
-    // Photo Picker States
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var selectedImageData: Data? = nil
     @State private var selectedUIImage: UIImage? = nil
