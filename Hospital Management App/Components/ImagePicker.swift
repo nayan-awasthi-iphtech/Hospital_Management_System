@@ -39,9 +39,9 @@ struct ImagePicker: View {
                         .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
                 }
             }
-            .onChange(of: selectedPhotItem){ newItem in
+            .onChange(of: selectedPhotItem){
                 Task{
-                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                    if let data = try? await selectedPhotItem?.loadTransferable(type: Data.self),
                        let uiImage = UIImage(data: data),
                         let compressedData = uiImage.jpegData(compressionQuality: 0.7){
                         await MainActor.run {

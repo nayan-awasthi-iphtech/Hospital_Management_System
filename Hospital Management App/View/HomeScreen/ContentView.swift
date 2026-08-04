@@ -13,11 +13,6 @@ struct HomeScreen: View {
     @StateObject private var appointmentViewModel = AppointmentViewModel()
     @StateObject private var authViewModel = AuthViewModel()
     
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
-        animation: .default
-    ) private var medicines: FetchedResults<Medicine>
-    
     @ObservedObject var currentUser: User
     
     private var upcomingUserAppointment: [Appointment] {
@@ -44,7 +39,7 @@ struct HomeScreen: View {
                         
                         MetricCountersRow(
                             appointmentCount: userAppointments.count,
-                            prescriptionCount: medicines.count,
+                            prescriptionCount: hasUpcomingAppointment ? (currentUser.user_medicine?.count ?? 0) : 0,
                             reportCount: currentUser.user_report?.count ?? 0
                         )
                         UpcomingAppointmentCard(
@@ -75,6 +70,7 @@ struct HomeScreen: View {
                 NotificationsSheet(currentUser: currentUser, selectedTab: $selectedTab)
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
+                    .environmentObject(appointmentViewModel)
             }
             .onAppear{
                 appointmentViewModel.fetchAppointments()

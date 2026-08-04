@@ -40,10 +40,14 @@ struct BookingSuccessView: View {
                 Text("⏰ \(selectedTimeSlot)")
             }
             .font(.headline)
-            .foregroundColor(.blue)
+            .foregroundColor(Color.primaryText)
             .padding()
-            .background(Color.blue.opacity(0.05))
+            .background(Color.cardBackground.opacity(0.8))
             .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.cardBorder, lineWidth: 1)
+            )
             
             Spacer()
             

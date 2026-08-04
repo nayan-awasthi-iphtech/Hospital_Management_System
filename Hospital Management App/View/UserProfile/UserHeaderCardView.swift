@@ -28,7 +28,7 @@ struct UserHeaderCardView: View {
             return Image(uiImage: uiImage)
         }
         else {
-            return Image("user1")
+            return Image(systemName: "person.crop.circle.fill")
         }
     }
     
@@ -43,7 +43,8 @@ struct UserHeaderCardView: View {
                     profileImage
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 56, height: 56)
+                        .frame(width: 50, height: 50)
+                        .foregroundColor(Color.accentBrown)
                         .clipShape(Circle())
                 }
                 
@@ -72,7 +73,7 @@ struct UserHeaderCardView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color(.white).opacity(0.8))
+                .fill(Color.cardBackground.opacity(0.8))
                 .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 6)
                 .shadow(color: Color.black.opacity(0.02), radius: 2, x: 0, y: 1)
         )

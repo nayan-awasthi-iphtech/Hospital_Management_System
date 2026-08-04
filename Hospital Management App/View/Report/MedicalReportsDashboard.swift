@@ -30,7 +30,7 @@ struct MedicalReportsDashboard: View {
                         TextField("Search by report title...", text: $viewModel.searchText)
                     }
                     .padding(12)
-                    .background(Color(.systemBackground))
+                    .background(Color.cardBackground)
                     .cornerRadius(12)
                     .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 3)
                     .padding(.horizontal, 16)

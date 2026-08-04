@@ -68,13 +68,15 @@ struct MetricCounterCard: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .fontWeight(.medium)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading) // Spreads columns symmetrically across any iPhone width
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading) // Equal width + equal height across all cards
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white) // High contrast card background
+                .fill(Color.cardBackground)
                 .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3) // Soft floating shadow
         )
     }

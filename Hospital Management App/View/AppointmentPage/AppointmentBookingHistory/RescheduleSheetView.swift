@@ -29,7 +29,7 @@ struct RescheduleSheetView: View {
                         DatePicker("Choose Date", selection: $newDate, in:Date()..., displayedComponents: .date)
                             .datePickerStyle(.graphical)
                             .padding()
-                            .background(Color(.systemBackground))
+                            .background(Color.cardBackground)
                             .cornerRadius(16)
                     }
                     
@@ -45,7 +45,7 @@ struct RescheduleSheetView: View {
                                     .foregroundColor(newTimePicker == slot ? .white: .primary)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 45)
-                                    .background(newTimePicker == slot ? Color.blue : Color(.systemGray6))
+                                    .background(newTimePicker == slot ? Color.blue : Color.cardBackground)
                                     .cornerRadius(12)
                                     .onTapGesture{
                                         newTimePicker = slot
@@ -68,7 +68,7 @@ struct RescheduleSheetView: View {
                 }
                 .padding(20)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(AppBackgroundView().ignoresSafeArea())
             .navigationTitle("Reschedule Slot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar{

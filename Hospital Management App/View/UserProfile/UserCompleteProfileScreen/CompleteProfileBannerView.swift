@@ -40,7 +40,7 @@ struct CompleteProfileBannerView: View {
             }
         }
         .padding(14)
-        .background(Color(.systemBackground))
+        .background(Color.cardBackground)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
         .overlay(

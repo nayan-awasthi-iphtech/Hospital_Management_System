@@ -12,18 +12,14 @@ struct NotificationsSheet: View {
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) var viewContext
+    @EnvironmentObject var appointmentViewModel: AppointmentViewModel
     
     @ObservedObject var currentUser: User
     @Binding var selectedTab: Int
     
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Appointment.date, ascending: true)],
-        animation: .default
-    ) private var appointments: FetchedResults<Appointment>
-    
     
     private var UpcomingAppointments: [Appointment] {
-        appointments.filter { appointment in
+        appointmentViewModel.appointments.filter { appointment in
             appointment.appointment_user == currentUser &&
             appointment.status?.lowercased() == "scheduled"
         }
@@ -135,7 +131,7 @@ struct NotificationsSheet: View {
             HStack {
                 Label(formattedDate(appointment.date), systemImage: "calendar")
                 Spacer()
-                Label(formattedTime(appointment.date), systemImage: "clock")
+                Label(formattedTime(appointment), systemImage: "clock")
             }
             .font(.caption)
             .fontWeight(.semibold)
@@ -161,9 +157,14 @@ struct NotificationsSheet: View {
         return formatter.string(from: date)
     }
     
-    private func formattedTime(_ date: Date?) -> String {
-        guard let date = date else { return "Time TBD" }
+    private func formattedTime(_ appointment: Appointment) -> String {
+        if let timeSlot = appointment.timeSlot, !timeSlot.isEmpty {
+            return timeSlot
+        }
+        
+        guard let date = appointment.date else { return "Time TBD" }
         let formatter = DateFormatter()
+        formatter.timeZone = TimeZone.current
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }

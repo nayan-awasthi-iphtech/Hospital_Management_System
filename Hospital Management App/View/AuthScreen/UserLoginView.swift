@@ -47,7 +47,7 @@ struct UserLoginView: View {
                             .frame(width: 96, height: 96)
                             .background(
                                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                    .fill(Color.white.opacity(0.8))
+                                    .fill(Color.cardBackground.opacity(0.8))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 24, style: .continuous)
                                             .strokeBorder(Color.orange.opacity(0.2), lineWidth: 1.5)
@@ -77,13 +77,14 @@ struct UserLoginView: View {
                                 HStack{
                                     Image(systemName: "envelope.fill")
                                         .foregroundStyle(.gray)
-                                    TextField("Enter your email", text: $viewModel.email)
+                                    TextField("", text: $viewModel.email, prompt: Text("Enter your email").foregroundColor(Color.secondaryText.opacity(0.7)))
+                                        .foregroundColor(Color.primaryText)
                                         .keyboardType(.emailAddress)
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                 }
                                 .padding()
-                                .background(Color(.systemBackground))
+                                .background(Color.cardBackground)
                                 .cornerRadius(12)
                             }
                             VStack(alignment: .leading, spacing: 6){
@@ -95,11 +96,11 @@ struct UserLoginView: View {
                                 HStack{
                                     Image(systemName: "lock")
                                         .foregroundStyle(.gray)
-                                    TextField("Enter your password", text: $viewModel.password)
-                                        .keyboardType(.phonePad)
+                                    TextField("", text: $viewModel.password, prompt: Text("Enter your password").foregroundColor(Color.secondaryText.opacity(0.7)))
+                                        .foregroundColor(Color.primaryText)
                                 }
                                 .padding()
-                                .background(Color(.systemBackground))
+                                .background(Color.cardBackground)
                                 .cornerRadius(12)
                             }
                         }

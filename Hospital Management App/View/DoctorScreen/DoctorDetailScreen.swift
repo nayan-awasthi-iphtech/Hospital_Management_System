@@ -5,12 +5,15 @@ struct DoctorDetailScreen: View {
     
     @Environment(\.managedObjectContext) var viewContext
     @EnvironmentObject var doctorViewModel: DoctorViewModel
+    @StateObject var authViewModel = AuthViewModel()
     @State private var isPresented: Bool = false
     @State private var isShowEditSheet: Bool = false
     
     @ObservedObject var doctor: Doctor
     @ObservedObject var user: User
     @Binding var selectedTab: Int
+    @State private var UserCompleteProfileAlert: Bool = false
+    @State private var showCompleteProfileSheet: Bool = false
     
     var body: some View {
         ZStack {
@@ -19,7 +22,7 @@ struct DoctorDetailScreen: View {
                 HStack(alignment: .center, spacing: 10) {
                     Text("Profile")
                         .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(red: 0.1, green: 0.1, blue: 0.12))
+                        .foregroundColor(Color.primaryText)
                         .tracking(0.5)
                     
                     Spacer()
@@ -53,7 +56,7 @@ struct DoctorDetailScreen: View {
                                         .scaledToFill()
                                         .frame(width: 100, height: 100)
                                         .foregroundColor(.blue.opacity(0.8))
-                                        .background(Circle().fill(Color(.systemBackground)))
+                                        .background(Circle().fill(Color.cardBackground))
                                         .clipShape(Circle())
                                         .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
                                 } else {
@@ -67,7 +70,7 @@ struct DoctorDetailScreen: View {
                                 Circle()
                                     .fill(Color.green)
                                     .frame(width: 22, height: 22)
-                                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 3))
+                                    .overlay(Circle().stroke(Color.cardBackground, lineWidth: 3))
                                     .padding(.trailing, 4)
                                     .padding(.bottom, 4)
                             }
@@ -90,7 +93,7 @@ struct DoctorDetailScreen: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
-                        .background(Color(.systemBackground))
+                        .background(Color.cardBackground)
                         .cornerRadius(20)
                         .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
                         .padding(.horizontal, 20)
@@ -137,7 +140,7 @@ struct DoctorDetailScreen: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(20)
-                        .background(Color(.systemBackground))
+                        .background(Color.cardBackground)
                         .cornerRadius(16)
                         .padding(.horizontal, 20)
                         
@@ -153,12 +156,16 @@ struct DoctorDetailScreen: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(20)
-                        .background(Color(.systemBackground))
+                        .background(Color.cardBackground)
                         .cornerRadius(16)
                         .padding(.horizontal, 20)
                         
                         Button(action: {
-                            isPresented = true
+                            if authViewModel.isAnyDetailMissing(for: user){
+                                UserCompleteProfileAlert = true
+                            } else {
+                                isPresented = true
+                            }
                         }) {
                             Text("Book Appointment")
                                 .font(.headline)
@@ -170,7 +177,7 @@ struct DoctorDetailScreen: View {
                                 .cornerRadius(16)
                                 .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
                         }
-                        .background(Color(.systemBackground))
+                        .background(Color.cardBackground)
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.02), radius: 5, x: 0, y: 2)
                         .padding(.horizontal, 20)
@@ -181,6 +188,17 @@ struct DoctorDetailScreen: View {
         }
         .navigationDestination(isPresented: $isPresented) {
             Appointment_Booking(doctor: doctor, selectedTab: $selectedTab, currentUser: user)
+        }
+        .alert("Complete Your Profile",isPresented: $UserCompleteProfileAlert){
+            Button("Update Now") {
+                showCompleteProfileSheet = true
+            }
+            Button("Later", role: .cancel) { }
+        }  message: {
+            Text("Complete your profile first, So Doctor can give you better treatment")
+        }
+        .sheet(isPresented: $showCompleteProfileSheet){
+            UserCompleteProfileView()
         }
         .sheet(isPresented: $isShowEditSheet){
             DoctorEditScreen(doctor: doctor)

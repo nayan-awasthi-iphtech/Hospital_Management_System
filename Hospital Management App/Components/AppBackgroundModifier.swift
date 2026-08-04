@@ -11,12 +11,12 @@ import SwiftUI
 struct AppBackgroundView: View {
     var body: some View {
         ZStack {
-            Color(red: 0.96, green: 0.95, blue: 0.93)
+            Color.appBackground
                 .ignoresSafeArea()
             
             RadialGradient(
                 colors: [
-                    Color(red: 0.88, green: 0.81, blue: 0.72).opacity(0.40),
+                    Color.appBackgroundTintTop,
                     Color.clear
                 ],
                 center: .topLeading,
@@ -27,7 +27,7 @@ struct AppBackgroundView: View {
             
             RadialGradient(
                 colors: [
-                    Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.30),
+                    Color.appBackgroundTintCenter,
                     Color.clear
                 ],
                 center: .center,

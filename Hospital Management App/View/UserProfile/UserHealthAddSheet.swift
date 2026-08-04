@@ -69,7 +69,7 @@ struct UserHealthAddSheet: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(Color(red: 0.96, green: 0.95, blue: 0.93))
+            .background(Color.appBackground)
             .navigationTitle("Add Vitals Reading")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

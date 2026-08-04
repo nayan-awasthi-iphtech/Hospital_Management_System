@@ -70,7 +70,7 @@ struct ExpandedQRModalView: View {
                         .foregroundColor(.blue)
                 }
                 .padding(28)
-                .background(Color(.systemBackground))
+                .background(Color.cardBackground)
                 .cornerRadius(28)
                 .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
                 .padding(.horizontal, 28)

@@ -76,8 +76,8 @@ struct DoctorEditScreen: View {
 
 #Preview {
     
-    let mockDoctor = try?  PersistenceController.preview.container.viewContext
+    let mockDoctor = PersistenceController.preview.container.viewContext
     
-    let doctor = Doctor(context: mockDoctor!)
+    let doctor = Doctor(context: mockDoctor)
     DoctorEditScreen(doctor: doctor)
 }

@@ -61,7 +61,7 @@ struct AppointmentCardView: View {
             .font(.system(size: 12, weight: .medium))
             .foregroundColor(.secondary)
             .padding(10)
-            .background(Color(.systemGray6))
+            .background(Color.cardBackground.opacity(0.5))
             .cornerRadius(8)
             
             if appointment.status == "Scheduled" {
@@ -73,7 +73,7 @@ struct AppointmentCardView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color.cardBackground)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.02), radius: 8, x: 0, y: 4)
     }

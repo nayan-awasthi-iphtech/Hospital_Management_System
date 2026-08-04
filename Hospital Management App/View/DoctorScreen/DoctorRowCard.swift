@@ -45,7 +45,7 @@ struct DoctorRowCard: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white)
+                    .fill(Color.cardBackground)
                     .shadow(color: Color.black.opacity(0.2), radius: 6, x:0, y:3)
             )
     }

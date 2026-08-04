@@ -33,8 +33,8 @@ struct CategoryBadge: View {
     private let activeBackground = Color(red: 0.30, green: 0.22, blue: 0.16)
     private let activeText = Color(red: 0.98, green: 0.96, blue: 0.93)
     
-    private let inactiveBackground = Color.white.opacity(0.70)
-    private let inactiveText = Color(red: 0.40, green: 0.33, blue: 0.27)
+    private let inactiveBackground = Color.cardBackground.opacity(0.70)
+    private let inactiveText = Color.secondaryText
     private let borderGold = Color(red: 0.82, green: 0.73, blue: 0.63).opacity(0.40)
     
     var body: some View {

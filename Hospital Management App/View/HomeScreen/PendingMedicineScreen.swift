@@ -10,62 +10,93 @@ internal import CoreData
 
 struct PendingMedicinesSection: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject private var authViewModel: AuthViewModel
     
-    @FetchRequest(
-        entity: Medicine.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
-        predicate: NSPredicate(format: "isTaken == %@", NSNumber(value: false)),
-        animation: .default
-    ) private var pendingMedicines: FetchedResults<Medicine>
+    @FetchRequest private var pendingMedicines: FetchedResults<Medicine>
     
+    private var currentUser: User? {
+        SessionManager.shared.getActiveUser(in: viewContext)
+    }
+    
+     private var isEligibleToViewMedicines: Bool {
+        guard let activeUser =  currentUser else { return false }
+        
+        let isProfileComplete = authViewModel.isAnyDetailMissing(for: activeUser)
+        
+        let hasBookedAppointment: Bool
+        if let appointments = activeUser.user_appointment as? Set<Appointment> {
+            hasBookedAppointment = !appointments.isEmpty
+        } else {
+            hasBookedAppointment = false
+        }
+        
+        return !isProfileComplete && hasBookedAppointment
+    }
+    
+    init(){
+        let activeUserID = UUID(uuidString: SessionManager.shared.currentUserID ?? "") ?? UUID()
+        
+        let predicate = NSPredicate(format: "medicine_user.id == %@ AND isTaken == false", activeUserID as CVarArg)
+        
+        _pendingMedicines = FetchRequest<Medicine>(
+            entity: Medicine.entity(),
+            sortDescriptors: [NSSortDescriptor(keyPath: \Medicine.name, ascending: true)],
+            predicate: predicate,
+            animation: .default
+        )
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             
-            HStack(){
-                Text("Pending Medicines")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 15)
-                
-                Spacer()
-                
-                NavigationLink(destination: MedicineDetailView()){
-                    Text("See All")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.blue)
-                }
-                .padding(.horizontal)
-            }
-            
-            if !pendingMedicines.isEmpty {
-                VStack(spacing: 12) {
-                    ForEach(pendingMedicines) { medicine in
-                        MedicineRowView(medicine: medicine)
-                    }
-                }
-                .padding(.horizontal, 15)
-            } else {
-                
-                HStack(spacing: 10) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title3)
-                        .foregroundColor(.green)
+            if isEligibleToViewMedicines {
+                HStack(){
+                    Text("Pending Medicines")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 15)
                     
-                    Text("All medicines taken for today!")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
+                    Spacer()
+                    
+                    NavigationLink(destination: MedicineDetailView()){
+                        Text("See All")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.horizontal)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(20)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color(UIColor.secondarySystemGroupedBackground))
-                        .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
-                )
-                .padding(.horizontal, 15)
+                
+                if !pendingMedicines.isEmpty {
+                    VStack(spacing: 12) {
+                        ForEach(pendingMedicines) { medicine in
+                            MedicineRowView(medicine: medicine)
+                        }
+                    }
+                    .padding(.horizontal, 15)
+                } else {
+                    
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.green)
+                        
+                        Text("All medicines taken for today!")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                            .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 3)
+                    )
+                    .padding(.horizontal, 15)
+                }
+            } else {
+                EmptyView()
             }
         }
     }
@@ -77,7 +108,7 @@ struct MedicineRowView: View {
     
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
-        
+            
             Image(systemName: "pill.fill")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(medicine.isTaken ? .green : .teal)

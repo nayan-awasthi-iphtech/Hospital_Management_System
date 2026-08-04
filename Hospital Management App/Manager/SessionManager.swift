@@ -45,7 +45,7 @@ class SessionManager: ObservableObject {
         
         do {
             let user = try context.fetch(request).first
-            if let user = user {
+            if user != nil {
             } else {
             }
             return user

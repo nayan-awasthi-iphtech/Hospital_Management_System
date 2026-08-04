@@ -26,7 +26,7 @@ struct DoctorBookingHeaderView: View {
                 Image(systemName: "person.crop.circle.fill")
                     .resizable()
                     .frame(width: 60, height: 60)
-                    .foregroundColor(.gray)
+                    .foregroundColor(Color.accentBrown)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -39,7 +39,7 @@ struct DoctorBookingHeaderView: View {
             Spacer()
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color.cardBackground)
         .cornerRadius(16)
     }
 }

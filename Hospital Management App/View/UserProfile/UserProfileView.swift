@@ -20,7 +20,7 @@ struct UserProfileView: View {
                     HStack(alignment: .center, spacing: 10) {
                         Text("Profile")
                             .font(.system(size: 40, weight: .bold, design: .rounded))
-                            .foregroundColor(Color(red: 0.1, green: 0.1, blue: 0.12))
+                            .foregroundColor(Color.primaryText)
                             .tracking(0.5)
                         
                         Spacer()
@@ -71,7 +71,7 @@ struct UserProfileView: View {
                             Divider().opacity(0.5)
                             UserInformationCardView(user: user)
                             Divider().opacity(0.5)
-                            if user.emergencyContact != 0 {
+                            if let emergency = user.emergencyContact, !emergency.isEmpty {
                                 EmergencyContactCardView(user: user)
                             }
                             Divider().opacity(0.5)

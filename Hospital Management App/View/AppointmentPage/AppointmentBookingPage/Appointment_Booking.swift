@@ -26,8 +26,7 @@ struct Appointment_Booking: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
+            AppBackgroundView()
             
             if viewModel.isBookingSuccess   {
                 BookingSuccessView(
@@ -54,7 +53,7 @@ struct Appointment_Booking: View {
                                 DatePicker("Choose Date", selection: $viewModel.selectedDate, in: Date()..., displayedComponents: .date)
                                     .datePickerStyle(.graphical)
                                     .padding()
-                                    .background(Color(.systemBackground))
+                                    .background(Color.cardBackground)
                                     .cornerRadius(16)
                             }
                             
@@ -70,7 +69,7 @@ struct Appointment_Booking: View {
                                             .foregroundColor(viewModel.selectedTimeSlot == slot ? .white : .primary)
                                             .frame(maxWidth: .infinity)
                                             .frame(height: 45)
-                                            .background(viewModel.selectedTimeSlot == slot ? Color.blue : Color(.systemBackground))
+                                            .background(viewModel.selectedTimeSlot == slot ? Color.blue : Color.cardBackground)
                                             .cornerRadius(12)
                                             .shadow(color: Color.black.opacity(0.01), radius: 3)
                                             .onTapGesture {

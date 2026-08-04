@@ -22,7 +22,6 @@ struct AddDoctorSheetView: View {
     @State private var errorMesage: String? = nil
     @State private var showerrorMessage: Bool = false
     
-    // Department Options
     private let departments = [
         "General Medicine",
         "Cardiology",
@@ -61,8 +60,7 @@ struct AddDoctorSheetView: View {
                                                     .foregroundColor(.gray)
                                             )
                                     }
-                                    
-                                    // Camera Edit Badge
+                                
                                     Circle()
                                         .fill(Color.blue)
                                         .frame(width: 30, height: 30)
@@ -75,9 +73,9 @@ struct AddDoctorSheetView: View {
                                         .padding(.bottom, 2)
                                 }
                             }
-                            .onChange(of: selectedItem) { newItem in
+                            .onChange(of: selectedItem) {
                                 Task {
-                                    if let data = try? await newItem?.loadTransferable(type: Data.self),
+                                    if let data = try? await selectedItem?.loadTransferable(type: Data.self),
                                        let uiImage = UIImage(data: data) {
                                         self.doctorViewModel.editImageData = data
                                         self.selectedUIImage = uiImage
@@ -91,7 +89,7 @@ struct AddDoctorSheetView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color(.systemBackground))
+                        .background(Color.cardBackground)
                         .cornerRadius(20)
                         .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
                         .padding(.horizontal, 20)
@@ -183,7 +181,7 @@ struct AddDoctorSheetView: View {
                             }
                         }
                         .padding(20)
-                        .background(Color(.systemBackground))
+                        .background(Color.cardBackground)
                         .cornerRadius(20)
                         .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
                         .padding(.horizontal, 20)

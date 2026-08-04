@@ -47,7 +47,7 @@ struct UserCompleteProfileView: View {
         currentUser?.allergies?.isEmpty ?? true
     }
     private var isEmergencyContactMissing: Bool {
-        (currentUser?.emergencyContact ?? 0) == 0
+        currentUser?.emergencyContact?.isEmpty ?? true
     }
     private var isInsuranceMissing: Bool {
         (currentUser?.insuranceDetails?.isEmpty ?? true) || (currentUser?.policyId?.isEmpty ?? true)
@@ -113,7 +113,7 @@ struct UserCompleteProfileView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 8)
-                                        .background(Color.white)
+                                        .background(Color.cardBackground)
                                         .cornerRadius(10)
                                     }
                                 }
@@ -146,7 +146,7 @@ struct UserCompleteProfileView: View {
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 8)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
@@ -160,14 +160,14 @@ struct UserCompleteProfileView: View {
                                         
                                         TextField("Enter street address, city, zip code", text: $address)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
                             }
                         }
                         .padding(16)
-                        .background(Color.white.opacity(0.65))
+                        .background(Color.cardBackground.opacity(0.65))
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
                     }
@@ -192,7 +192,7 @@ struct UserCompleteProfileView: View {
                                         TextField("e.g. 175", text: $height)
                                             .keyboardType(.numberPad)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
@@ -207,7 +207,7 @@ struct UserCompleteProfileView: View {
                                         TextField("e.g. 70", text: $weight)
                                             .keyboardType(.numberPad)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
@@ -221,14 +221,14 @@ struct UserCompleteProfileView: View {
                                         
                                         TextField("e.g. Peanuts, Penicillin (or 'None')", text: $allergies)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
                             }
                         }
                         .padding(16)
-                        .background(Color.white.opacity(0.65))
+                        .background(Color.cardBackground.opacity(0.65))
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
                     }
@@ -253,7 +253,7 @@ struct UserCompleteProfileView: View {
                                         TextField("e.g. 9876543210", text: $emergencyContact)
                                             .keyboardType(.phonePad)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
@@ -267,7 +267,7 @@ struct UserCompleteProfileView: View {
                                         
                                         TextField("Enter insurance provider name", text: $insuranceDetails)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                     
@@ -279,14 +279,14 @@ struct UserCompleteProfileView: View {
                                         
                                         TextField("Enter policy number or ID", text: $policyId)
                                             .padding(12)
-                                            .background(Color.white)
+                                            .background(Color.cardBackground)
                                             .cornerRadius(10)
                                     }
                                 }
                             }
                         }
                         .padding(16)
-                        .background(Color.white.opacity(0.65))
+                        .background(Color.cardBackground.opacity(0.65))
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
                     }
@@ -352,11 +352,7 @@ struct UserCompleteProfileView: View {
         self.allergies = user.allergies ?? ""
         self.insuranceDetails = user.insuranceDetails ?? ""
         self.policyId = user.policyId ?? ""
-        if user.emergencyContact != 0 {
-            self.emergencyContact = String(user.emergencyContact)
-        } else {
-            self.emergencyContact = ""
-        }
+        self.emergencyContact = user.emergencyContact ?? ""
     }
     
     private func saveProfile() {
@@ -376,7 +372,7 @@ struct UserCompleteProfileView: View {
         if isWeightMissing { user.weight = weight }
         if isAllergiesMissing { user.allergies = allergies }
         
-        if isEmergencyContactMissing { user.emergencyContact = Int32(emergencyContact) ?? 0 }
+        if isEmergencyContactMissing { user.emergencyContact = emergencyContact }
         if isInsuranceMissing {
             user.insuranceDetails = insuranceDetails
             user.policyId = policyId

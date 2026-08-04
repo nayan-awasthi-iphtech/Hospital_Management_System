@@ -109,7 +109,7 @@ struct DoctorsListView: View {
                 ToolbarItem(placement: .principal) {
                     Text("Find Doctors")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(red: 0.1, green: 0.1, blue: 0.12))
+                        .foregroundColor(Color.primaryText)
                         .tracking(0.5)
                 }
                 

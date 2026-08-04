@@ -13,8 +13,8 @@ struct EmergencyContactCardView: View {
     let user: User
     
     private var contactPhoneString: String {
-        guard user.emergencyContact != 0 else { return "Not Provided" }
-        return "\(user.emergencyContact)"
+        guard let emr = user.emergencyContact else { return "Not Provided" }
+        return "\(emr)"
     }
     
     var body: some View {
@@ -50,16 +50,16 @@ struct EmergencyContactCardView: View {
                 
                 Image(systemName: "phone.circle.fill")
                     .font(.system(size: 38, weight: .medium))
-                    .foregroundStyle(user.emergencyContact != 0 ? .red : .gray.opacity(0.4))
+                    .foregroundStyle(contactPhoneString.isEmpty ? .red : .gray.opacity(0.4))
             }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.65))
+                .fill(Color.cardBackground.opacity(0.65))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.8), lineWidth: 1)
+                        .strokeBorder(Color.cardBorder, lineWidth: 1)
                 )
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         )

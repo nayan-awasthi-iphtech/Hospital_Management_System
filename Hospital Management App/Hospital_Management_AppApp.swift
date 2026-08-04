@@ -11,6 +11,7 @@ internal import CoreData
 @main
 struct Hospital_Management_AppApp: App {
     let persistenceController = PersistenceController.shared
+    @StateObject private var themeManager = ThemeManager.shared
     
     init(){
         NotificationManager.shared.requestNotificationPermission()
@@ -20,6 +21,8 @@ struct Hospital_Management_AppApp: App {
         WindowGroup {
             SplashScreenView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(themeManager)
+                .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         }
     }
 }

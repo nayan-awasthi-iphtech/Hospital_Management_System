@@ -56,6 +56,7 @@ class AuthViewModel: ObservableObject {
         do {
             try context.save()
             SessionManager.shared.currentUserID = newUserID.uuidString
+            Medicine.createMedicinesForUser(newUser, in: context)
             clearInputs()
             self.isProfileComplete = true
             print("User created successfully: \(String(describing: newUser))")
@@ -105,7 +106,7 @@ class AuthViewModel: ObservableObject {
     func updateProfileDetails(
         bloodGroup: String,
         allergies: String,
-        emergencyContact: Int32,
+        emergencyContact: String,
         insuranceDetails: String,
         policyId: String,
         address: String,
@@ -166,7 +167,7 @@ class AuthViewModel: ObservableObject {
         user.gender == nil || user.gender?.isEmpty == true ||
         user.height == nil || user.height?.isEmpty == true ||
         user.weight == nil || user.weight?.isEmpty == true ||
-        user.emergencyContact == 0 ||
+        user.emergencyContact == nil || user.emergencyContact?.isEmpty == true ||
         user.dob == nil
     }
     

@@ -47,35 +47,60 @@ extension Doctor {
 }
 
 extension Medicine {
-    static func MedicineDummyData(viewContext: NSManagedObjectContext) {
-        
-        let names = ["Amlodipine", "Metformin", "Atorvastatin", "Vitamin D3"]
-        let dosages = ["5mg", "500mg", "10mg", "1000 IU"]
-        let categories = ["Blood Pressure", "Diabetes", "Cholesterol", "Supplement"]
-        let frequencies = ["Once daily", "Twice daily", "Once daily", "Once daily"]
-        let nextTimes = ["8:00 AM", "2:00 PM", "9:00 PM", "8:00 AM"]
-        let states = [true, false, false, true]
-        let daysLeftList: [Int16] = [15, 5, 20, 30]
-        
-        for i in 0..<names.count {
+    
+    static let dummyMedicineTemplate: [(name: String, dosage: String, category: String, frequency: String, nextTime: String, daysLeft: Int16)] = [
+        ("Amlodipine", "5mg", "Blood Pressure", "Once daily", "8:00 AM", 15),
+        ("Metformin", "500mg", "Diabetes", "Twice daily", "2:00 PM", 5),
+        ("Atorvastatin", "10mg", "Cholesterol", "Once daily", "9:00 PM", 20),
+        ("Vitamin D3", "1000 IU", "Supplement", "Once daily", "8:00 AM", 30)
+    ]
+    
+    static func MedicineDummyData(viewContext: NSManagedObjectContext, for user: User? = nil) {
+        for item in dummyMedicineTemplate {
             let medicine = Medicine(context: viewContext)
             medicine.id = UUID()
-            medicine.name = names[i]
-            medicine.dosage = dosages[i]
-            medicine.category = categories[i]
-            medicine.frequency = frequencies[i]
-            medicine.nextTime = nextTimes[i]
-            medicine.isTaken = states[i]
-            medicine.daysLeft = daysLeftList[i]
-            
-            
+            medicine.name = item.name
+            medicine.dosage = item.dosage
+            medicine.category = item.category
+            medicine.frequency = item.frequency
+            medicine.nextTime = item.nextTime
+            medicine.isTaken = false
+            medicine.daysLeft = item.daysLeft
+            medicine.medicine_user = user
         }
-        
         do {
             try viewContext.save()
             print("Medicine dummy data created successfully!")
         } catch {
             print("Error saving medicine dummy data: \(error.localizedDescription)")
+        }
+    }
+    
+    static func createMedicinesForUser(_ user: User, in viewContext: NSManagedObjectContext) {
+        guard (user.user_medicine?.count ?? 0) == 0 else {
+            print("User already has \(user.user_medicine?.count ?? 0) medicines. Skipping creation.")
+            return
+        }
+        
+        for item in dummyMedicineTemplate {
+            let medicine = Medicine(context: viewContext)
+            medicine.id = UUID()
+            medicine.name = item.name
+            medicine.dosage = item.dosage
+            medicine.category = item.category
+            medicine.frequency = item.frequency
+            medicine.nextTime = item.nextTime
+            medicine.isTaken = false
+            medicine.daysLeft = item.daysLeft
+            medicine.medicine_user = user
+            user.addToUser_medicine(medicine)
+        }
+        
+        do {
+            try viewContext.save()
+            print("Created \(dummyMedicineTemplate.count) medicines for user \(user.name ?? "?")")
+        } catch {
+            print("Error saving per-user medicines: \(error.localizedDescription)")
         }
     }
 }

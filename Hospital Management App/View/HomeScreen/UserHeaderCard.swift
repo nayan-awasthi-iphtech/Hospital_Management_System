@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+internal import CoreData
 
 struct UserHeaderCard: View {
+    
+    @Environment(\.managedObjectContext) var viewContext
+    @EnvironmentObject var themeManager: ThemeManager
     
     @ObservedObject var currentUser: User
     let hasUpcomingAppointment: Bool
@@ -32,7 +36,7 @@ struct UserHeaderCard: View {
         if let data = currentUser.imageData, let uiImage = UIImage(data: data) {
             return Image(uiImage: uiImage)
         } else {
-            return Image("user1")
+            return Image(systemName: "person.crop.circle.fill")
         }
     }
     
@@ -52,10 +56,25 @@ struct UserHeaderCard: View {
             
             Spacer()
             
+            Button {
+                themeManager.isDarkMode.toggle()
+            } label: {
+                Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(themeManager.isDarkMode ? Color.goldAmber : Color.accentBrown)
+                    .padding(12)
+                    .background(
+                        Circle()
+                            .fill(.white)
+                            .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 3)
+                    )
+            }
+            
             profileImage
                 .resizable()
                 .scaledToFill()
-                .frame(width: 50, height: 50)
+                .frame(width: 45, height: 45)
+                .foregroundColor(.white)
                 .clipShape(Circle())
                 .onTapGesture {
                     selectedTab = 4
@@ -64,7 +83,7 @@ struct UserHeaderCard: View {
                 ZStack(alignment: .topTrailing) {
                     Image(systemName: "bell.fill")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(Color(red: 0.45, green: 0.32, blue: 0.22))
+                        .foregroundColor(Color.accentBrown)
                         .padding(12)
                         .background(
                             Circle()
@@ -90,8 +109,8 @@ struct UserHeaderCard: View {
             ZStack {
                 LinearGradient(
                     colors: [
-                        Color(red: 0.72, green: 0.58, blue: 0.46),
-                        Color(red: 0.55, green: 0.41, blue: 0.30)
+                        Color.headerGradientStart,
+                        Color.headerGradientEnd
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -113,9 +132,28 @@ struct UserHeaderCard: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .shadow(color: Color.black.opacity(0.18), radius: 12, x: 0, y: 6)
-        .shadow(color: Color(red: 0.55, green: 0.41, blue: 0.30).opacity(0.25), radius: 18, x: 0, y: 8)
+        .shadow(color: Color.headerGradientEnd.opacity(0.25), radius: 18, x: 0, y: 8)
         .padding(.horizontal, 14)
         .padding(.top, 11)
     }
 }
 
+#Preview {
+    let context = PersistenceController.preview.container.viewContext
+    
+    let sampleUser = SessionManager.shared.getActiveUser(in: context) ?? {
+        let user = User(context: context)
+        user.name = "John Doe"
+        user.email = "john@example.com"
+        return user
+    }()
+    
+    UserHeaderCard(
+        currentUser: sampleUser,
+        hasUpcomingAppointment: false,
+        onNotificationTap: {},
+        selectedTab: .constant(0)
+    )
+    .environment(\.managedObjectContext, context)
+    .environmentObject(ThemeManager.shared)
+}

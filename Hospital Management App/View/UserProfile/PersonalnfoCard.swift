@@ -52,10 +52,10 @@ struct PersonalnfoCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.65))
+                .fill(Color.cardBackground.opacity(0.65))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.8), lineWidth: 1)
+                        .strokeBorder(Color.cardBorder, lineWidth: 1)
                 )
                 .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         )

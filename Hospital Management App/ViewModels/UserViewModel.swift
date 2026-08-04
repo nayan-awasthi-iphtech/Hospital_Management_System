@@ -37,6 +37,9 @@ class UserViewModel: ObservableObject {
         do {
             if let user = SessionManager.shared.getActiveUser(in: context){
                 self.currentUser = user
+                if (user.user_medicine?.count ?? 0) == 0 {
+                    Medicine.createMedicinesForUser(user, in: context)
+                }
                 updateUserFields(from: user)
             } else {
                 print("No user found in coreData")
@@ -46,15 +49,12 @@ class UserViewModel: ObservableObject {
             print(error.localizedDescription)
         }
     }
+    
     func updateUserFields(from user: User){
         self.editName = user.name ?? ""
         self.editEmail = user.email ?? ""
         self.editPhone = user.phone ?? ""
-        if user.emergencyContact != 0 {
-                    self.editEmergencyContact = String(user.emergencyContact)
-                } else {
-                    self.editEmergencyContact = ""
-                }
+        self.editEmergencyContact = user.emergencyContact ?? ""
         self.editInsuranceDetail = user.insuranceDetails ?? ""
         self.editInsurancePolicy = user.policyId ?? ""
         self.editInsuranceConverage = user.coverage ?? ""
@@ -91,7 +91,7 @@ class UserViewModel: ObservableObject {
         user.name = editName
         user.email = editEmail
         user.phone = editPhone
-        user.emergencyContact = Int32(editEmergencyContact) ?? 0
+        user.emergencyContact = editEmergencyContact
         user.insuranceDetails = editInsuranceDetail
         user.policyId = editInsurancePolicy
         user.coverage = editInsuranceConverage

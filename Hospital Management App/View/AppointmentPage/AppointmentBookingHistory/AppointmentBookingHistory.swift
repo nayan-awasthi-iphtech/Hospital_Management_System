@@ -25,7 +25,7 @@ struct AppointmentBookingHistory: View {
             VStack(spacing: 12) {
                 Text("Appointments")
                     .font(.system(size: 40, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(red: 0.1, green: 0.1, blue: 0.12))
+                    .foregroundColor(Color.primaryText)
                     .tracking(0.5)
                 
                 Picker("", selection: $selectedTab) {
@@ -42,7 +42,7 @@ struct AppointmentBookingHistory: View {
                         systemImage: "calendar.badge.clock",
                         description: Text(selectedTab == 0 ? "You don't have any upcoming appointments scheduled." : "Your appointment history is empty.")
                     )
-                    .foregroundStyle(Color(red: 0.45, green: 0.38, blue: 0.32))
+                    .foregroundStyle(Color.secondaryText)
                     Spacer()
                 } else {
                     List {

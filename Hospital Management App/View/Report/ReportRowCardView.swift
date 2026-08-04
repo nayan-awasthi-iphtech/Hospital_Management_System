@@ -46,11 +46,11 @@ struct DynamicReportRowCard: View {
                 .font(.system(size: 11, weight: .bold))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color(.systemGray6))
+                .background(Color.cardBackground.opacity(0.5))
                 .cornerRadius(6)
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color.cardBackground)
         .cornerRadius(16)
     }
 }
