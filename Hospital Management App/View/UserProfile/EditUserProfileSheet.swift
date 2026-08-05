@@ -14,8 +14,6 @@ struct EditUserProfileSheet: View {
     @EnvironmentObject var viewModel: UserViewModel
     @StateObject private var session = SessionManager.shared
     
-    @State private var profileImageData: Data? = nil
-    
     // Fetch the active user entity
     private var currentUser: User? {
         viewModel.currentUser ?? session.getActiveUser(in: viewContext)
@@ -56,7 +54,7 @@ struct EditUserProfileSheet: View {
                 Form {
                     
                     Section {
-                        ImagePicker(selectedImageData: $profileImageData)
+                        ImagePicker(selectedImageData: $viewModel.edituserProfileImage)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
                     .listRowBackground(Color.clear)
@@ -160,11 +158,6 @@ struct EditUserProfileSheet: View {
                             }
                         }
                         .disabled(!viewModel.isformValid)
-                    }
-                }
-                .onAppear{
-                    if let saveData = currentUser?.imageData {
-                        profileImageData = saveData
                     }
                 }
             }

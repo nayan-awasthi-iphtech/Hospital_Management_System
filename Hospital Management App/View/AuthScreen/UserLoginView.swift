@@ -14,6 +14,7 @@ struct UserLoginView: View {
     var onLoginSuccessful: () -> Void
     
     @State private var ShowRegistrationScreen: Bool = false
+    @State private var isPasswordVisible: Bool = false
     
     var body: some View {
         NavigationStack{
@@ -96,8 +97,22 @@ struct UserLoginView: View {
                                 HStack{
                                     Image(systemName: "lock")
                                         .foregroundStyle(.gray)
-                                    TextField("", text: $viewModel.password, prompt: Text("Enter your password").foregroundColor(Color.secondaryText.opacity(0.7)))
-                                        .foregroundColor(Color.primaryText)
+                                    
+                                    Group {
+                                        if isPasswordVisible {
+                                            TextField("", text: $viewModel.password, prompt: Text("Enter your password").foregroundColor(Color.secondaryText.opacity(0.7)))
+                                        } else {
+                                            SecureField("", text: $viewModel.password, prompt: Text("Enter your password").foregroundColor(Color.secondaryText.opacity(0.7)))
+                                        }
+                                    }
+                                    .foregroundColor(Color.primaryText)
+                                    
+                                    Button(action: {
+                                        isPasswordVisible.toggle()
+                                    }) {
+                                        Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
+                                            .foregroundStyle(.gray)
+                                    }
                                 }
                                 .padding()
                                 .background(Color.cardBackground)

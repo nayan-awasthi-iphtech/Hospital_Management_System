@@ -353,6 +353,7 @@ struct UserCompleteProfileView: View {
         self.insuranceDetails = user.insuranceDetails ?? ""
         self.policyId = user.policyId ?? ""
         self.emergencyContact = user.emergencyContact ?? ""
+        self.profileImageData = user.imageData
     }
     
     private func saveProfile() {
